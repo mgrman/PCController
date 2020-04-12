@@ -7,14 +7,19 @@ namespace PCController.Services
 {
     public class ControllerService : IControllerService
     {
-        public void Shutdown()
+        public void Lock()
         {
-            throw new NotImplementedException();
+            System.Diagnostics.Process.Start(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
         }
 
         public void Sleep()
         {
-            throw new NotImplementedException();
+            System.Diagnostics.Process.Start(@"C:\WINDOWS\system32\rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
+        }
+
+        public void Shutdown()
+        {
+            System.Diagnostics.Process.Start(@"shutdown", "/s");
         }
     }
 }

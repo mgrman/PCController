@@ -5,14 +5,19 @@
 
 <h1>Hello!</h1>
 
-<form>
-    <div class="form-group">
-        <label for="exampleInputPassword1">PIN</label>
-        <input type="password" class="form-control" id="pin" placeholder="PIN" @bind-value="_pinAuthenticationStateProvider.PIN">
-    </div>
-</form>
+<div class="form-group">
+    <label for="pin">PIN</label>
+    <input type="password" class="form-control" id="pin" placeholder="PIN" @bind-value="_pinAuthenticationStateProvider.PIN">
+</div>
 <AuthorizeView>
     <div class="card-group">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Lock</h5>
+                <p class="card-text">Lorem ipsum.</p>
+                <button type="button" class="btn btn-warning" @onclick="_controller.Lock">Lock</button>
+            </div>
+        </div>
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Sleep</h5>

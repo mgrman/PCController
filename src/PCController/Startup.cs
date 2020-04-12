@@ -33,6 +33,7 @@ namespace PCController
             services.AddScoped<PinAuthenticationStateProvider>();
             services.AddScoped<AuthenticationStateProvider, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
             services.AddScoped<IPinHandler, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
+            services.AddScoped<IControllerService, ControllerService>();
 
             var config = new Config();
             Configuration.GetSection("PCController").Bind(config);

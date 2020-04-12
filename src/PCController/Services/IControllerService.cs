@@ -10,5 +10,7 @@ namespace PCController.Services
         void Shutdown();
 
         void Sleep();
+
+        void Lock();
     }
 }
