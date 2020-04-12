@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# local backup of ignored settings
+/_bckp
+
+# VSCode
+.vscode/
+
+
 # User-specific files
 *.rsuser
 *.suo
