@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PCController.Data;
+using PCController.Services;
 
 namespace PCController
 {
@@ -28,7 +29,14 @@ namespace PCController
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+
+            services.AddScoped<PinAuthenticationStateProvider>();
+            services.AddScoped<AuthenticationStateProvider, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
+            services.AddScoped<IPinHandler, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
+
+            var config = new Config();
+            Configuration.GetSection("PCController").Bind(config);
+            services.AddSingleton<IConfig>(config);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

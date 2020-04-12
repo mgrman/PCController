@@ -1,7 +1,31 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@inject IPinHandler _pinAuthenticationStateProvider
+@inject IControllerService _controller
 
-Welcome to your new app.
+<h1>Hello!</h1>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<form>
+    <div class="form-group">
+        <label for="exampleInputPassword1">PIN</label>
+        <input type="password" class="form-control" id="pin" placeholder="PIN" @bind-value="_pinAuthenticationStateProvider.PIN">
+    </div>
+</form>
+<AuthorizeView>
+    <div class="card-group">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Sleep</h5>
+                <p class="card-text">Lorem ipsum.</p>
+                <button type="button" class="btn btn-danger" @onclick="_controller.Sleep">Sleep</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Shutdown</h5>
+                <p class="card-text">Lorem ipsum.</p>
+                <button type="button" class="btn btn-danger" @onclick="_controller.Shutdown">Shutdown</button>
+            </div>
+        </div>
+    </div>
+</AuthorizeView>
