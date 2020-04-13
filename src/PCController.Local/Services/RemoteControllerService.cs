@@ -12,7 +12,7 @@ namespace PCController.Local.Services
     {
         private readonly HttpClient _httpClient;
 
-        public RemoteControllerService(HttpClient httpClient, IConfig config)
+        public RemoteControllerService(HttpClient httpClient, Config config)
         {
             _httpClient = httpClient;
             RemoteServers = config.RemoteServers;

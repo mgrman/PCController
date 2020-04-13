@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace PCController.Local
 {
-    public class Config : IConfig
+    public class Config
     {
-        public string PIN { get; set; }
+        public string PIN { get; private set; }
 
-        public IReadOnlyList<RemoteServer> RemoteServers { get; set; }
+        public IReadOnlyList<RemoteServer> RemoteServers { get; private set; }
     }
 }

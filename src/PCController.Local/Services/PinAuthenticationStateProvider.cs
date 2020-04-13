@@ -17,7 +17,7 @@ namespace PCController.Local.Services
         private Task<AuthenticationState> _cachedState;
         private bool _initialized;
 
-        public PinAuthenticationStateProvider(IConfig config, ILocalStorageService localStorage)
+        public PinAuthenticationStateProvider(Config config, ILocalStorageService localStorage)
         {
             _expectedPIN = config.PIN;
 
