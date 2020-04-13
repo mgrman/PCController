@@ -3,6 +3,7 @@ using PCController.Local.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +24,18 @@ namespace PCController.Local.Services
 
         public async Task WakeUpAsync(RemoteServer remoteServer, CancellationToken cancellationToken)
         {
-            var process = Process.Start("wolcmd", $"{remoteServer.Uri.Host} 255.255.255.0 7");
-            await process.WaitForExitAsync(cancellationToken);
+            var ip = remoteServer.Uri.Host;
+            if (ip == "localhost")
+            {
+                ip = "127.0.0.1";
+            }
+            var res = await ArpRequest.SendAsync(IPAddress.Parse(ip));
+            if (res.Exception != null)
+            {
+                throw res.Exception;
+            }
+            var mac = res.Address;
+            await IPAddress.Broadcast.SendWolAsync(mac);
         }
 
         public async Task LockAsync(RemoteServer remoteServer, CancellationToken cancellationToken)
