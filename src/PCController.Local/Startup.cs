@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Builder;
@@ -37,7 +38,14 @@ namespace PCController.Local
             services.AddScoped<IPinHandler, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
 
             services.AddHttpClient();
-            services.AddScoped<IControllerService, ControllerService>();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                services.AddScoped<IControllerService, WindowsControllerService>();
+            }
+            else
+            {
+                services.AddScoped<IControllerService, NotSupportedControllerService>();
+            }
             services.AddScoped<IRemoteControllerService, RemoteControllerService>();
 
             services.Configure<Config>(Configuration.GetSection("PCController"));

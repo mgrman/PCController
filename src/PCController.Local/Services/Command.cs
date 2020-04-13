@@ -13,9 +13,7 @@ namespace PCController.Local.Services
 
         Lock,
 
-        PlayMedia,
-
-        PauseMedia,
+        PlayPauseMedia,
 
         StopMedia,
 

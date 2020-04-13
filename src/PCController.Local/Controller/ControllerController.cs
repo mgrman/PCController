@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,13 +28,17 @@ namespace PCController.Local.Controller
 
         [Route(CommandRoute)]
         [HttpPost]
-        public IActionResult Lock([FromRoute(Name = CommandWord)]Command command, [FromHeader(Name = PinHeader)]string pin)
+        public async Task<IActionResult> InvokeCommandAsync([FromRoute(Name = CommandWord)]Command command, [FromHeader(Name = PinHeader)]string pin, CancellationToken cancellationToken)
         {
+            if (!_controllerService.IsPlatformSupported)
+            {
+                return NotFound("This server does not support local controlling!");
+            }
             if (_config.PIN != pin)
             {
                 return Unauthorized();
             }
-            _controllerService.InvokeCommand(command);
+            await _controllerService.InvokeCommandAsync(command, cancellationToken);
             return Ok();
         }
     }

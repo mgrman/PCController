@@ -12,17 +12,20 @@
 </div>
 <AuthorizeView>
     <div class="card-group">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">LOCAL</h5>
-                <p class="card-text">Lorem ipsum.</p>
+        @if (_controller.IsPlatformSupported)
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">LOCAL</h5>
+                    <p class="card-text">Lorem ipsum.</p>
 
-                @foreach (var command in Enum.GetValues(typeof(Command)).Cast<Command>())
-                {
-                    <button type="button" class="btn btn-info" @onclick="() => _controller.InvokeCommand(command)">@command</button>
-                }
+                    @foreach (var command in Enum.GetValues(typeof(Command)).Cast<Command>())
+                    {
+                        <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
+                    }
+                </div>
             </div>
-        </div>
+        }
 
         @foreach (var remoteServer in _remoteController.RemoteServers)
         {<div class="card">
