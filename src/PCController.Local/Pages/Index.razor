@@ -1,0 +1,91 @@
+﻿@page "/"
+
+@inject IPinHandler _pinAuthenticationStateProvider
+@inject IControllerService _controller
+@inject IRemoteControllerService _remoteController
+
+<h1>Hello!</h1>
+
+<div class="form-group">
+    <label for="pin">PIN</label>
+    <input type="password" class="form-control" id="pin" placeholder="PIN" @bind-value="_pinAuthenticationStateProvider.PIN">
+</div>
+<AuthorizeView>
+    <div class="card-group">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Lock</h5>
+                <p class="card-text">Lorem ipsum.</p>
+                <button type="button" class="btn btn-warning" @onclick="_controller.Lock">Lock</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Sleep</h5>
+                <p class="card-text">Lorem ipsum.</p>
+                <button type="button" class="btn btn-danger" @onclick="_controller.Sleep">Sleep</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Shutdown</h5>
+                <p class="card-text">Lorem ipsum.</p>
+                <button type="button" class="btn btn-danger" @onclick="_controller.Shutdown">Shutdown</button>
+            </div>
+        </div>
+    </div>
+
+    @foreach (var remoteServer in _remoteController.RemoteServers)
+    {
+
+        <div class="card-group">
+            <div class="row">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">@remoteServer.Uri</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">WakeUp</h5>
+                        <p class="card-text">Lorem ipsum.</p>
+                        <button type="button" class="btn btn-warning" @onclick="async()=> await   _remoteController.WakeUpAsync(remoteServer,System.Threading.CancellationToken.None)">WakeUp</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Lock</h5>
+                        <p class="card-text">Lorem ipsum.</p>
+                        <button type="button" class="btn btn-warning" @onclick="async()=> await   _remoteController.LockAsync(remoteServer,System.Threading.CancellationToken.None)">Lock</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Sleep</h5>
+                        <p class="card-text">Lorem ipsum.</p>
+                        <button type="button" class="btn btn-danger" @onclick="async()=> await   _remoteController.SleepAsync(remoteServer,System.Threading.CancellationToken.None)">Sleep</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Shutdown</h5>
+                        <p class="card-text">Lorem ipsum.</p>
+                        <button type="button" class="btn btn-danger" @onclick="async()=> await   _remoteController.ShutdownAsync(remoteServer,System.Threading.CancellationToken.None)">Shutdown</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</AuthorizeView>
+
+@functions {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await _pinAuthenticationStateProvider.InitializeJSAsync();
+        StateHasChanged();
+    }
+
+}

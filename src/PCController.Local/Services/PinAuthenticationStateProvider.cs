@@ -1,24 +1,28 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace PCController.Services
+namespace PCController.Local.Services
 {
     public class PinAuthenticationStateProvider : AuthenticationStateProvider, IPinHandler
     {
         private readonly string _expectedPIN;
+        private readonly ILocalStorageService _localStorage;
         private string _pin;
 
         private Task<AuthenticationState> _cachedState;
+        private bool _initialized;
 
-        public PinAuthenticationStateProvider(IConfig config)
+        public PinAuthenticationStateProvider(IConfig config, ILocalStorageService localStorage)
         {
             _expectedPIN = config.PIN;
 
             _cachedState = Task.FromResult(GetState());
+            _localStorage = localStorage;
         }
 
         public string PIN
@@ -31,15 +35,31 @@ namespace PCController.Services
                     return;
                 }
                 _pin = value;
-                _cachedState = Task.FromResult(GetState());
+                UpdateStoredPin(value);
 
+                _cachedState = Task.FromResult(GetState());
                 this.NotifyAuthenticationStateChanged(_cachedState);
             }
+        }
+
+        public async Task InitializeJSAsync()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+            _initialized = true;
+            PIN = await _localStorage.GetItemAsync<string>("pin");
         }
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             return _cachedState;
+        }
+
+        private async void UpdateStoredPin(string pin)
+        {
+            await _localStorage.SetItemAsync("pin", pin);
         }
 
         private AuthenticationState GetState()

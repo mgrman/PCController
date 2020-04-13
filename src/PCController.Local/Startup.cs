@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -10,9 +11,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PCController.Services;
+using PCController.Local.Services;
 
-namespace PCController
+namespace PCController.Local
 {
     public class Startup
     {
@@ -29,11 +30,15 @@ namespace PCController
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddBlazoredLocalStorage();
 
             services.AddScoped<PinAuthenticationStateProvider>();
             services.AddScoped<AuthenticationStateProvider, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
             services.AddScoped<IPinHandler, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
+
+            services.AddHttpClient();
             services.AddScoped<IControllerService, ControllerService>();
+            services.AddScoped<IRemoteControllerService, RemoteControllerService>();
 
             var config = new Config();
             Configuration.GetSection("PCController").Bind(config);
@@ -62,6 +67,7 @@ namespace PCController
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapControllers();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
