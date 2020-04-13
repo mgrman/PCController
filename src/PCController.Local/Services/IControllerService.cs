@@ -7,10 +7,6 @@ namespace PCController.Local.Services
 {
     public interface IControllerService
     {
-        void Shutdown();
-
-        void Sleep();
-
-        void Lock();
+        void InvokeCommand(Command command);
     }
 }

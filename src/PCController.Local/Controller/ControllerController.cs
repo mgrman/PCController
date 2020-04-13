@@ -12,9 +12,9 @@ namespace PCController.Local.Controller
     [ApiController]
     public class ControllerController : ControllerBase
     {
-        public const string LockRoute = "api/controller/lock";
-        public const string SleepRoute = "api/controller/sleep";
-        public const string ShutdownRoute = "api/controller/shutdown";
+        public const string CommandWord = "command";
+        public const string CommandPlaceholder = "{" + CommandWord + "}";
+        public const string CommandRoute = "api/controller/" + CommandPlaceholder;
         public const string PinHeader = "pin";
         private readonly IControllerService _controllerService;
         private readonly Config _config;
@@ -25,39 +25,15 @@ namespace PCController.Local.Controller
             _config = config.Value;
         }
 
-        [Route(LockRoute)]
+        [Route(CommandRoute)]
         [HttpPost]
-        public IActionResult Lock([FromHeader(Name = PinHeader)]string pin)
+        public IActionResult Lock([FromRoute(Name = CommandWord)]Command command, [FromHeader(Name = PinHeader)]string pin)
         {
             if (_config.PIN != pin)
             {
                 return Unauthorized();
             }
-            _controllerService.Lock();
-            return Ok();
-        }
-
-        [Route(SleepRoute)]
-        [HttpPost]
-        public IActionResult Sleep([FromHeader(Name = PinHeader)]string pin)
-        {
-            if (_config.PIN != pin)
-            {
-                return Unauthorized();
-            }
-            _controllerService.Sleep();
-            return Ok();
-        }
-
-        [Route(ShutdownRoute)]
-        [HttpPost]
-        public IActionResult Shutdown([FromHeader(Name = PinHeader)]string pin)
-        {
-            if (_config.PIN != pin)
-            {
-                return Unauthorized();
-            }
-            _controllerService.Shutdown();
+            _controllerService.InvokeCommand(command);
             return Ok();
         }
     }

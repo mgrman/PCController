@@ -38,27 +38,17 @@ namespace PCController.Local.Services
             await IPAddress.Broadcast.SendWolAsync(mac);
         }
 
-        public async Task LockAsync(RemoteServer remoteServer, CancellationToken cancellationToken)
+        public async Task InvokeCommandAsync(Command command, RemoteServer remoteServer, CancellationToken cancellationToken)
         {
-            await ExecuteRoute(remoteServer, ControllerController.LockRoute, cancellationToken);
+            await ExecuteRoute(remoteServer, command, cancellationToken);
         }
 
-        public async Task SleepAsync(RemoteServer remoteServer, CancellationToken cancellationToken)
-        {
-            await ExecuteRoute(remoteServer, ControllerController.SleepRoute, cancellationToken);
-        }
-
-        public async Task ShutdownAsync(RemoteServer remoteServer, CancellationToken cancellationToken)
-        {
-            await ExecuteRoute(remoteServer, ControllerController.ShutdownRoute, cancellationToken);
-        }
-
-        private async Task ExecuteRoute(RemoteServer remoteServer, string route, CancellationToken cancellationToken)
+        private async Task ExecuteRoute(RemoteServer remoteServer, Command command, CancellationToken cancellationToken)
         {
             var content = new StringContent(string.Empty);
             content.Headers.Add(ControllerController.PinHeader, remoteServer.PIN);
 
-            var routeUri = new Uri(route, UriKind.Relative);
+            var routeUri = new Uri(ControllerController.CommandRoute.Replace(ControllerController.CommandPlaceholder, command.ToString()), UriKind.Relative);
             var res = new Uri(remoteServer.Uri, routeUri);
 
             var response = await _httpClient.PostAsync(res, content, cancellationToken);

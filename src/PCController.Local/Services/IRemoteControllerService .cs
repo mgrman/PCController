@@ -12,10 +12,6 @@ namespace PCController.Local.Services
 
         Task WakeUpAsync(RemoteServer remoteServer, CancellationToken cancellationToken);
 
-        Task LockAsync(RemoteServer remoteServer, CancellationToken cancellationToken);
-
-        Task SleepAsync(RemoteServer remoteServer, CancellationToken cancellationToken);
-
-        Task ShutdownAsync(RemoteServer remoteServer, CancellationToken cancellationToken);
+        Task InvokeCommandAsync(Command command, RemoteServer remoteServer, CancellationToken cancellationToken);
     }
 }

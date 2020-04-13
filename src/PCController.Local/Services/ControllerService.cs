@@ -7,9 +7,32 @@ namespace PCController.Local.Services
 {
     public class ControllerService : IControllerService
     {
-        public void Lock()
+        public void InvokeCommand(Command command)
         {
-            System.Diagnostics.Process.Start(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
+            switch (command)
+            {
+                case Command.Shutdown:
+                    Shutdown();
+                    break;
+
+                case Command.Sleep:
+                    Sleep();
+                    break;
+
+                case Command.Lock:
+                    Lock();
+                    break;
+
+                case Command.PlayMedia:
+                case Command.PauseMedia:
+                case Command.StopMedia:
+                case Command.IncreaseVolume:
+                case Command.DecreaseVolume:
+                case Command.MuteVolume:
+                default:
+                    throw new NotImplementedException();
+                    break;
+            }
         }
 
         public void Sleep()
@@ -20,6 +43,11 @@ namespace PCController.Local.Services
         public void Shutdown()
         {
             System.Diagnostics.Process.Start(@"shutdown", "/s");
+        }
+
+        private void Lock()
+        {
+            System.Diagnostics.Process.Start(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
         }
     }
 }
