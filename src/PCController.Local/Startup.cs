@@ -40,9 +40,8 @@ namespace PCController.Local
             services.AddScoped<IControllerService, ControllerService>();
             services.AddScoped<IRemoteControllerService, RemoteControllerService>();
 
-            var config = new Config();
-            Configuration.GetSection("PCController").Bind(config);
-            services.AddSingleton<IConfig>(config);
+            var config = Configuration.GetSection("PCController").Get<Config>();
+            services.AddSingleton(config);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

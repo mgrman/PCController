@@ -3,6 +3,16 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# publish
+/publish-local-win-x64/
+/publish-local-win-x86/
+/publish-local-win-arm/
+/publish-local-win-arm64/
+/publish-local-linux-x64/
+/publish-local-linux-x86/
+/publish-local-linux-arm/
+/publish-local-linux-arm64/
+
 # local backup of ignored settings
 /_bckp
 

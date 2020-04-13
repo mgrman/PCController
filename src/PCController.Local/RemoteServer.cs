@@ -7,7 +7,7 @@ namespace PCController.Local
 {
     public class RemoteServer
     {
-        public Uri Uri { get; private set; }
-        public string PIN { get; private set; }
+        public Uri Uri { get; set; }
+        public string PIN { get; set; }
     }
 }

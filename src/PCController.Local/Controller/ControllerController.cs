@@ -16,9 +16,9 @@ namespace PCController.Local.Controller
         public const string ShutdownRoute = "api/controller/shutdown";
         public const string PinHeader = "pin";
         private readonly IControllerService _controllerService;
-        private readonly IConfig _config;
+        private readonly Config _config;
 
-        public ControllerController(IControllerService controllerService, IConfig config)
+        public ControllerController(IControllerService controllerService, Config config)
         {
             _controllerService = controllerService;
             _config = config;

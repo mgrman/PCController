@@ -7,8 +7,8 @@ namespace PCController.Local
 {
     public class Config
     {
-        public string PIN { get; private set; }
+        public string PIN { get; set; }
 
-        public IReadOnlyList<RemoteServer> RemoteServers { get; private set; }
+        public IReadOnlyList<RemoteServer> RemoteServers { get; set; }
     }
 }
