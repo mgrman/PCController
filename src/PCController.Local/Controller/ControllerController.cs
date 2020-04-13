@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using PCController.Local.Services;
 
 namespace PCController.Local.Controller
@@ -18,10 +19,10 @@ namespace PCController.Local.Controller
         private readonly IControllerService _controllerService;
         private readonly Config _config;
 
-        public ControllerController(IControllerService controllerService, Config config)
+        public ControllerController(IControllerService controllerService, IOptionsSnapshot<Config> config)
         {
             _controllerService = controllerService;
-            _config = config;
+            _config = config.Value;
         }
 
         [Route(LockRoute)]

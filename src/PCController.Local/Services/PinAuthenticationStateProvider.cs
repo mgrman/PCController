@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +18,9 @@ namespace PCController.Local.Services
         private Task<AuthenticationState> _cachedState;
         private bool _initialized;
 
-        public PinAuthenticationStateProvider(Config config, ILocalStorageService localStorage)
+        public PinAuthenticationStateProvider(IOptionsSnapshot<Config> config, ILocalStorageService localStorage)
         {
-            _expectedPIN = config.PIN;
+            _expectedPIN = config.Value.PIN;
 
             _cachedState = Task.FromResult(GetState());
             _localStorage = localStorage;

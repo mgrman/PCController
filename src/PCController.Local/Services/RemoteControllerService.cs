@@ -1,4 +1,5 @@
-﻿using PCController.Local.Controller;
+﻿using Microsoft.Extensions.Options;
+using PCController.Local.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,10 +13,10 @@ namespace PCController.Local.Services
     {
         private readonly HttpClient _httpClient;
 
-        public RemoteControllerService(HttpClient httpClient, Config config)
+        public RemoteControllerService(HttpClient httpClient, IOptionsSnapshot<Config> config)
         {
             _httpClient = httpClient;
-            RemoteServers = config.RemoteServers;
+            RemoteServers = config.Value.RemoteServers;
         }
 
         public IReadOnlyList<RemoteServer> RemoteServers { get; }
