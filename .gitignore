@@ -3,23 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# publish
-/publish-local-win-x64/
-/publish-local-win-x86/
-/publish-local-win-arm/
-/publish-local-win-arm64/
-/publish-local-linux-x64/
-/publish-local-linux-x86/
-/publish-local-linux-arm/
-/publish-local-linux-arm64/
-
-# local backup of ignored settings
-/_bckp
-
-# VSCode
-.vscode/
-
-
 # User-specific files
 *.rsuser
 *.suo
@@ -371,3 +354,23 @@ MigrationBackup/
 
 # Rider
 .idea/
+
+# VSCode
+.vscode/
+
+# local backup of ignored settings
+/_bckp
+
+# publish
+/publish-local/
+/publish-local-win/
+/publish-local-win-x64/
+/publish-local-win-x86/
+/publish-local-win-arm/
+/publish-local-win-arm64/
+/publish-local-linux/
+/publish-local-linux-x64/
+/publish-local-linux-x86/
+/publish-local-linux-arm/
+/publish-local-linux-arm64/
+!/src/PCController.Local/Properties/PublishProfiles/WindowsAppProfile.pubxml

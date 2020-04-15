@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet build ../PCController.Local/PCController.Local.csproj /p:DeployOnBuild=true /p:PublishProfile=WindowsAppProfile.pubxml&#xD;&#xA;" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="rmdir /s &quot;$(TargetDir)server&quot;&#xD;&#xA;(robocopy &quot;$(SolutionDir)..\publish-local&quot; &quot;$(TargetDir)server&quot; /E) ^&amp; IF %25ERRORLEVEL%25 LEQ 4 exit /B 0" />
+  </Target>
+</Project>
