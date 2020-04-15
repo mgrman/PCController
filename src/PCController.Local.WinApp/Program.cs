@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PCController.LocalApp
+namespace PCController.Local.WinApp
 {
     internal static class Program
     {
