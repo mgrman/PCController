@@ -363,14 +363,6 @@ MigrationBackup/
 
 # publish
 /publish-local/
-/publish-local-win/
-/publish-local-win-x64/
-/publish-local-win-x86/
-/publish-local-win-arm/
-/publish-local-win-arm64/
-/publish-local-linux/
-/publish-local-linux-x64/
-/publish-local-linux-x86/
-/publish-local-linux-arm/
-/publish-local-linux-arm64/
-!/src/PCController.Local/Properties/PublishProfiles/WindowsAppProfile.pubxml
+/publish-local_winApp/
+!/src/PCController.Local/Properties/PublishProfiles/FolderProfile.pubxml
+!/src/PCController.Local.WinApp/Properties/PublishProfiles/FolderProfile.pubxml
