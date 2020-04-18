@@ -1,3 +1,2 @@
-export ASPNETCORE_ENVIRONMENT=rpi
-dotnet run --project "src/PCController.Local/PCController.Local.csproj" -- --urls "http://*:8080"
+dotnet run --project "src/PCController.Local/PCController.Local.csproj" --launch-profile rpi
 read -p "Press enter to continue"
