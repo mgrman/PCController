@@ -27,7 +27,7 @@ namespace PCController.Local
                     Console.WriteLine($"{currentDirSegments[0]}");
                     for (int i = 1; i < currentDirSegments.Length; i++)
                     {
-                        var parentDir = Path.Combine(currentDirSegments.Take(i).ToArray());
+                        var parentDir = string.Join(Path.DirectorySeparatorChar, currentDirSegments.Take(i).ToArray());
                         var configPathInParentDir = Path.Combine(parentDir, "PCController.appConfig");
 
                         Console.WriteLine($"{File.Exists(configPathInParentDir)} {configPathInParentDir}");
