@@ -42,6 +42,10 @@ namespace PCController.Local
             {
                 services.AddScoped<IControllerService, WindowsControllerService>();
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                services.AddScoped<IControllerService, LinuxControllerService>();
+            }
             else
             {
                 services.AddScoped<IControllerService, NotSupportedControllerService>();

@@ -22,5 +22,9 @@ namespace PCController.Local.Services
         DecreaseVolume,
 
         MuteVolume,
+        LeftArrow,
+        RightArrow,
+        UpArrow,
+        DownArrow
     }
 }

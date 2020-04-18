@@ -52,6 +52,22 @@ namespace PCController.Local.Services
                     keybd_event((byte)0xAD, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
                     break;
 
+                case Command.LeftArrow:
+                    keybd_event((byte)0x25, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
+                    break;
+
+                case Command.RightArrow:
+                    keybd_event((byte)0x26, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
+                    break;
+
+                case Command.UpArrow:
+                    keybd_event((byte)0x27, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
+                    break;
+
+                case Command.DownArrow:
+                    keybd_event((byte)0x29, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
