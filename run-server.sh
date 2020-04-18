@@ -1,1 +1,2 @@
-dotnet run --project "src/PCController.Local/PCController.Local.csproj" --launch-profile server
+export ASPNETCORE_ENVIRONMENT=server
+dotnet run --project "src/PCController.Local/PCController.Local.csproj" --no-launch-profile -- --urls "http://*:8080"
