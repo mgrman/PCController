@@ -28,6 +28,8 @@ namespace PCController.Local
                         var parentDir = Path.Combine(currentDirSegments.Take(i).ToArray());
                         var configPathInParentDir = Path.Combine(parentDir, "PCController.appConfig");
 
+                        Console.WriteLine($"{File.Exists(configPathInParentDir)} {configPathInParentDir}");
+
                         config.AddJsonFile(configPathInParentDir, true);
                     }
                 })
