@@ -6,21 +6,21 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "server"
       },
-      "applicationUrl": "http://localhost:80"
+      "applicationUrl": "http://*:8080"
     },
     "rpi": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "rpi"
       },
-      "applicationUrl": "http://*:80"
+      "applicationUrl": "http://*:8080"
     },
     "surface": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "surface"
       },
-      "applicationUrl": "http://*:80"
+      "applicationUrl": "http://*:8080"
     }
   }
 }
