@@ -22,7 +22,9 @@ namespace PCController.Local
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
+                    Console.WriteLine($"{Environment.CurrentDirectory}");
                     var currentDirSegments = Environment.CurrentDirectory.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    Console.WriteLine($"{currentDirSegments[0]}");
                     for (int i = 1; i < currentDirSegments.Length; i++)
                     {
                         var parentDir = Path.Combine(currentDirSegments.Take(i).ToArray());
