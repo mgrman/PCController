@@ -1,2 +1,2 @@
-export ASPNETCORE_ENVIRONMENT=rpi
+export ASPNETCORE_ENVIRONMENT=Development
 dotnet run --project "src/PCController.Local/PCController.Local.csproj"
