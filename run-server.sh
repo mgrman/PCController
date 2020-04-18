@@ -1,0 +1,1 @@
+dotnet run --project "src/PCController.Local/PCController.Local.csproj" --launch-profile server
