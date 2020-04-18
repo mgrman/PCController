@@ -20,6 +20,17 @@ namespace PCController.Local
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    var currentDirSegments = Environment.CurrentDirectory.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    for (int i = 1; i < currentDirSegments.Length; i++)
+                    {
+                        var parentDir = Path.Combine(currentDirSegments.Take(i).ToArray());
+                        var configPathInParentDir = Path.Combine(parentDir, "PCController.appConfig");
+
+                        config.AddJsonFile(configPathInParentDir, true);
+                    }
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
