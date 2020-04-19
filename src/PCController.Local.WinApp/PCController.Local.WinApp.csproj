@@ -15,8 +15,9 @@
     <None Update="icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\PCController.Local\wwwroot\**\*.*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet publish ../PCController.Local/PCController.Local.csproj --configuration &quot;$(ConfigurationName)&quot; --output &quot;$(TargetDir)&quot;" />
+  </Target>
 </Project>

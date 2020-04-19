@@ -13,9 +13,6 @@ namespace PCController.Local.Services
 
         public bool IsPlatformSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        [DllImport("user32.dll")]
-        public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
-
         public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
         {
             switch (command)
@@ -72,6 +69,9 @@ namespace PCController.Local.Services
                     throw new NotImplementedException();
             }
         }
+
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
 
         private async Task StartProcessAsync(string path, string args)
         {
