@@ -36,21 +36,20 @@ namespace PCController.Local.Services
             {
                 ip = "127.0.0.1";
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+
+            string arpResponse;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                await StartProcessAsync("ping", $"{ip} -n 1");
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                await StartProcessAsync("ping", $"{ip} -c 1");
+                await StartProcessAsync("/bin/ping", $"{ip} -c 1");
+                arpResponse = await StartProcessAndReadOutAsync("/usr/sbin/arp", "-a");
             }
             else
             {
-                await StartProcessAsync("ping", $"{ip}");
+                await StartProcessAsync("ping", $"{ip} -n 1");
+                arpResponse = await StartProcessAndReadOutAsync("arp", "-a");
             }
-            var arp = await StartProcessAndReadOutAsync("arp", "-a");
 
-            var match = Regex.Match(arp, $"^.*?({Regex.Escape(ip)}).*?((?>[0-9A-Fa-f]{{2}}[:-]){{5}}(?>[0-9A-Fa-f]{{2}})).*?$", RegexOptions.Multiline);
+            var match = Regex.Match(arpResponse, $"^.*?({Regex.Escape(ip)}).*?((?>[0-9A-Fa-f]{{2}}[:-]){{5}}(?>[0-9A-Fa-f]{{2}})).*?$", RegexOptions.Multiline);
             var macAdress = match.Groups[2].Value;
             _logger.LogInformation($"MacAdress for {ip} was found as {macAdress}.");
             var mac = PhysicalAddress.Parse(macAdress);
