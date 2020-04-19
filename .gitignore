@@ -364,6 +364,4 @@ MigrationBackup/
 # publish
 /publish-local/
 /publish-local_winApp/
-!/src/PCController.Local/Properties/PublishProfiles/FolderProfile.pubxml
-!/src/PCController.Local.WinApp/Properties/PublishProfiles/FolderProfile.pubxml
 PCController.appConfig
