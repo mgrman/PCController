@@ -1,10 +1,15 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PCController.Local.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,10 +18,12 @@ namespace PCController.Local.Services
     public class RemoteControllerService : IRemoteControllerService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<RemoteControllerService> _logger;
 
-        public RemoteControllerService(HttpClient httpClient, IOptionsSnapshot<Config> config)
+        public RemoteControllerService(HttpClient httpClient, IOptionsSnapshot<Config> config, ILogger<RemoteControllerService> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
             RemoteServers = config.Value.RemoteServers;
         }
 
@@ -29,12 +36,24 @@ namespace PCController.Local.Services
             {
                 ip = "127.0.0.1";
             }
-            var res = await ArpRequest.SendAsync(IPAddress.Parse(ip));
-            if (res.Exception != null)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                throw res.Exception;
+                await StartProcessAsync("ping", $"{ip} -n 1");
             }
-            var mac = res.Address;
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                await StartProcessAsync("ping", $"{ip} -c 1");
+            }
+            else
+            {
+                await StartProcessAsync("ping", $"{ip}");
+            }
+            var arp = await StartProcessAndReadOutAsync("arp", "-a");
+
+            var match = Regex.Match(arp, $"^.*?({Regex.Escape(ip)}).*?((?>[0-9A-Fa-f]{{2}}[:-]){{5}}(?>[0-9A-Fa-f]{{2}})).*?$", RegexOptions.Multiline);
+            var macAdress = match.Groups[2].Value;
+            _logger.LogInformation($"MacAdress for {ip} was found as {macAdress}.");
+            var mac = PhysicalAddress.Parse(macAdress);
             await IPAddress.Broadcast.SendWolAsync(mac);
         }
 
@@ -56,6 +75,26 @@ namespace PCController.Local.Services
             {
                 throw new InvalidOperationException(response.StatusCode.ToString());
             }
+        }
+
+        private async Task StartProcessAsync(string path, string args)
+        {
+            var process = System.Diagnostics.Process.Start(path, args);
+            await process.WaitForExitAsync();
+        }
+
+        private async Task<string> StartProcessAndReadOutAsync(string path, string args)
+        {
+            var startInfo = new ProcessStartInfo()
+            {
+                FileName = path,
+                Arguments = args,
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
+            var process = System.Diagnostics.Process.Start(startInfo);
+            await process.WaitForExitAsync();
+            return await process.StandardOutput.ReadToEndAsync();
         }
     }
 }
