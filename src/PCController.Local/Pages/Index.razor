@@ -1,4 +1,5 @@
 ﻿@page "/"
+@implements IDisposable
 
 @inject IPinHandler _pinAuthenticationStateProvider
 @inject IControllerService _controller
@@ -28,15 +29,17 @@
         }
 
         @foreach (var remoteServer in _remoteController.RemoteServers)
-        {<div class="card">
+        {
+
+            <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">@remoteServer.Uri</h5>
-                    <p class="card-text">Lorem ipsum.</p>
+                    <p class="card-text">@(onlineStatuses.TryGetValue(remoteServer, out var res)?res: OnlineStatus.Unknown)</p>
 
                     <button type="button" class="btn btn-info" @onclick="async()=> await   _remoteController.WakeUpAsync(remoteServer,System.Threading.CancellationToken.None)">WakeUp</button>
                     @foreach (var command in Enum.GetValues(typeof(Command)).Cast<Command>())
                     {
-                        <button type="button" class="btn btn-info" @onclick="async()=> await   _remoteController.InvokeCommandAsync(command,remoteServer,System.Threading.CancellationToken.None)">@command</button>
+                        <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res2)?res2: OnlineStatus.Unknown)!= OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async()=> await   _remoteController.InvokeCommandAsync(command,remoteServer,System.Threading.CancellationToken.None)">@command</button>
                     }
                 </div>
             </div>
@@ -47,10 +50,41 @@
 
 @functions {
 
+    private readonly List<IDisposable> disposables = new List<IDisposable>();
+    private readonly Dictionary<RemoteServer, OnlineStatus> onlineStatuses = new Dictionary<RemoteServer, OnlineStatus>();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _pinAuthenticationStateProvider.InitializeJSAsync();
-        StateHasChanged();
+        var change = await _pinAuthenticationStateProvider.InitializeJSAsync();
+        if (change)
+        {
+            StateHasChanged();
+        }
+
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        foreach (var remoteServer in _remoteController.RemoteServers)
+        {
+            var disposable = _remoteController.IsOnline(remoteServer)
+                .Subscribe(o =>
+                {
+                    onlineStatuses[remoteServer] = o;
+                    StateHasChanged();
+                });
+            disposables.Add(disposable);
+        }
+    }
+
+    public void Dispose()
+    {
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
     }
 
 }

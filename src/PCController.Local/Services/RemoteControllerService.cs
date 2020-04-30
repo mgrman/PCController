@@ -8,7 +8,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,6 +56,61 @@ namespace PCController.Local.Services
             _logger.LogInformation($"MacAdress for {ip} was found as {macAdress}.");
             var mac = PhysicalAddress.Parse(macAdress);
             await IPAddress.Broadcast.SendWolAsync(mac);
+        }
+
+        public IObservable<OnlineStatus> IsOnline(RemoteServer remoteServer)
+        {
+            return Observable.Create<OnlineStatus>(async (observer, cancellationToken) =>
+            {
+                var pingSender = new Ping();
+                OnlineStatus previousStatus = OnlineStatus.Unknown;
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        // Create a buffer of 32 bytes of data to be transmitted.
+                        int timeout = 120;
+                        PingReply reply = await pingSender.SendPingAsync(remoteServer.Uri.Host, timeout);
+                        if (reply.Status != IPStatus.Success)
+                        {
+                            previousStatus = OnlineStatus.Offline;
+                            observer.OnNext(previousStatus);
+                        }
+                        else
+                        {
+                            if (previousStatus == OnlineStatus.Offline)
+                            {
+                                previousStatus = OnlineStatus.DeviceOnline;
+                                observer.OnNext(previousStatus);
+                            }
+                            var routeUri = new Uri(ControllerController.StatusRoute, UriKind.Relative);
+                            var res = new Uri(remoteServer.Uri, routeUri);
+                            var message = new HttpRequestMessage(HttpMethod.Get, res);
+                            var cancel = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                            var requestTask = _httpClient.SendAsync(message, cancel.Token);
+                            var aaa = await Task.WhenAny(requestTask, Task.Delay(TimeSpan.FromSeconds(10)));
+                            if (aaa is Task<HttpResponseMessage> response && (await response).IsSuccessStatusCode)
+                            {
+                                previousStatus = OnlineStatus.ServerOnline;
+                                observer.OnNext(previousStatus);
+                            }
+                            else
+                            {
+                                cancel.Cancel();
+                                previousStatus = OnlineStatus.DeviceOnline;
+                                observer.OnNext(previousStatus);
+                            }
+                        }
+                        await Task.Delay(TimeSpan.FromSeconds(5));
+                    }
+                    catch
+                    {
+                        observer.OnNext(OnlineStatus.Unknown);
+                        throw;
+                    }
+                }
+            })
+                .Distinct();
         }
 
         public async Task InvokeCommandAsync(Command command, RemoteServer remoteServer, CancellationToken cancellationToken)

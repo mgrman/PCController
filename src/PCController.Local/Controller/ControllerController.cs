@@ -15,6 +15,7 @@ namespace PCController.Local.Controller
     {
         public const string CommandWord = "command";
         public const string CommandPlaceholder = "{" + CommandWord + "}";
+        public const string StatusRoute = "api/status";
         public const string CommandRoute = "api/controller/" + CommandPlaceholder;
         public const string PinHeader = "pin";
         private readonly IControllerService _controllerService;
@@ -26,9 +27,16 @@ namespace PCController.Local.Controller
             _config = config.Value;
         }
 
+        [Route(StatusRoute)]
+        [HttpGet]
+        public async Task<IActionResult> StatusCheck()
+        {
+            return Ok();
+        }
+
         [Route(CommandRoute)]
         [HttpPost]
-        public async Task<IActionResult> InvokeCommandAsync([FromRoute(Name = CommandWord)]Command command, [FromHeader(Name = PinHeader)]string pin, CancellationToken cancellationToken)
+        public async Task<IActionResult> InvokeCommandAsync([FromRoute(Name = CommandWord)] Command command, [FromHeader(Name = PinHeader)] string pin, CancellationToken cancellationToken)
         {
             if (!_controllerService.IsPlatformSupported)
             {

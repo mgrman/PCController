@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="2.1.5" />
+    <PackageReference Include="System.Reactive" Version="4.4.1" />
     <PackageReference Include="WakeOnLAN" Version="2.0.2" />
   </ItemGroup>
 

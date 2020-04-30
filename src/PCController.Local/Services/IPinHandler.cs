@@ -4,7 +4,8 @@ namespace PCController.Local.Services
 {
     public interface IPinHandler
     {
-        Task InitializeJSAsync();
         string PIN { get; set; }
+
+        Task<bool> InitializeJSAsync();
     }
 }
