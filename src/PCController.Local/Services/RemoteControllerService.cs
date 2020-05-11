@@ -66,50 +66,64 @@ namespace PCController.Local.Services
             {
                 while (true)
                 {
-                    observer.OnNext(OnlineStatus.Offline);
-
-                    var ip = remoteServer.Uri.Host;
-                    if (ip == "localhost")
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        ip = "127.0.0.1";
+                        observer.OnCompleted();
+                        return;
                     }
-                    bool isPinged;
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        isPinged = await StartProcessAndCheckExitCodeAsync("/bin/ping", $"{ip} -c 1");
-                    }
-                    else
-                    {
-                        isPinged = await StartProcessAndCheckExitCodeAsync("ping", $"{ip} -n 1");
-                    }
-                    if (!isPinged)
+                    try
                     {
                         observer.OnNext(OnlineStatus.Offline);
+
+                        var ip = remoteServer.Uri.Host;
+                        if (ip == "localhost")
+                        {
+                            ip = "127.0.0.1";
+                        }
+                        bool isPinged;
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        {
+                            isPinged = await StartProcessAndCheckExitCodeAsync("/bin/ping", $"{ip} -c 1");
+                        }
+                        else
+                        {
+                            isPinged = await StartProcessAndCheckExitCodeAsync("ping", $"{ip} -n 1");
+                        }
+                        if (!isPinged)
+                        {
+                            observer.OnNext(OnlineStatus.Offline);
+                            await Task.Delay(1000);
+                            continue;
+                        }
+                        observer.OnNext(OnlineStatus.DeviceOnline);
+
+                        var hubConnection = new HubConnectionBuilder()
+                            .WithUrl($"{remoteServer.Uri}statusHub")
+                            .WithAutomaticReconnect()
+                            .Build();
+
+                        var tcs = new TaskCompletionSource<Exception>();
+                        hubConnection.Closed += async (e) =>
+                        {
+                            tcs.SetResult(e);
+                        };
+                        hubConnection.Reconnected += async (e) =>
+                        {
+                        };
+
+                        hubConnection.Reconnecting += async (e) =>
+                        {
+                        };
+
+                        await hubConnection.StartAsync(cancellationToken);
+                        observer.OnNext(OnlineStatus.ServerOnline);
+                        await tcs.Task;
+                    }
+                    catch (Exception ex)
+                    {
                         await Task.Delay(1000);
                         continue;
                     }
-                    observer.OnNext(OnlineStatus.DeviceOnline);
-
-                    var hubConnection = new HubConnectionBuilder()
-                        .WithUrl($"{remoteServer.Uri}/statusHub")
-                        .Build();
-
-                    var tcs = new TaskCompletionSource<Exception>();
-                    hubConnection.Closed += async (e) =>
-                    {
-                        tcs.SetResult(e);
-                    };
-                    hubConnection.Reconnected += async (e) =>
-                    {
-                    };
-
-                    hubConnection.Reconnecting += async (e) =>
-                    {
-                    };
-
-                    await hubConnection.StartAsync(cancellationToken);
-                    observer.OnNext(OnlineStatus.ServerOnline);
-                    await tcs.Task;
                 }
             })
             .Distinct();

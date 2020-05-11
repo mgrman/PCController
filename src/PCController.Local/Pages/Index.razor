@@ -62,21 +62,28 @@
         }
 
     }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+
+            foreach (var remoteServer in _remoteController.RemoteServers)
+            {
+                var disposable = _remoteController.IsOnline(remoteServer)
+                    .Subscribe(o =>
+                    {
+                        onlineStatuses[remoteServer] = o;
+                        StateHasChanged();
+                    });
+                disposables.Add(disposable);
+            }
+        }
+    }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        foreach (var remoteServer in _remoteController.RemoteServers)
-        {
-            var disposable = _remoteController.IsOnline(remoteServer)
-                .Subscribe(o =>
-                {
-                    onlineStatuses[remoteServer] = o;
-                    StateHasChanged();
-                });
-            disposables.Add(disposable);
-        }
     }
 
     public void Dispose()
