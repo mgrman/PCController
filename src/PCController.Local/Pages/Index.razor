@@ -3,7 +3,7 @@
 
 @inject IPinHandler _pinAuthenticationStateProvider
 @inject IControllerService _controller
-@inject IRemoteControllerService _remoteController
+@inject IRemoteServersProvider _remoteServersProvider
 
 <h1>Hello!</h1>
 
@@ -20,7 +20,8 @@
                     <h5 class="card-title">LOCAL</h5>
                     <p class="card-text">Lorem ipsum.</p>
 
-                    @foreach (var command in Enum.GetValues(typeof(Command)).Cast<Command>())
+                    @foreach (var command in Enum.GetValues(typeof(Command))
+                        .Cast<Command>())
                     {
                         <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
                     }
@@ -28,22 +29,21 @@
             </div>
         }
 
-        @foreach (var remoteServer in _remoteController.RemoteServers)
+        @foreach (var remoteServer in _remoteServersProvider.RemoteServers)
         {
-
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">@remoteServer.Uri</h5>
-                    <p class="card-text">@(onlineStatuses.TryGetValue(remoteServer, out var res)?res: OnlineStatus.Unknown)</p>
+                    <p class="card-text">@(onlineStatuses.TryGetValue(remoteServer, out var res) ? res : OnlineStatus.Unknown)</p>
 
-                    <button type="button" class="btn btn-info" @onclick="async()=> await   _remoteController.WakeUpAsync(remoteServer,System.Threading.CancellationToken.None)">WakeUp</button>
-                    @foreach (var command in Enum.GetValues(typeof(Command)).Cast<Command>())
+                    <button type="button"  disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res3) ? res3 : OnlineStatus.Unknown) != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await remoteServer.TryToWakeUpAsync(System.Threading.CancellationToken.None)">WakeUp</button>
+                    @foreach (var command in Enum.GetValues(typeof(Command))
+                        .Cast<Command>())
                     {
-                        <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res2)?res2: OnlineStatus.Unknown)!= OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async()=> await   _remoteController.InvokeCommandAsync(command,remoteServer,System.Threading.CancellationToken.None)">@command</button>
+                        <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res2) ? res2 : OnlineStatus.Unknown) != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async () => await remoteServer.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
                     }
                 </div>
             </div>
-
         }
     </div>
 </AuthorizeView>
@@ -60,30 +60,27 @@
         {
             StateHasChanged();
         }
-
     }
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        if (firstRender)
+        if (!firstRender)
         {
-
-            foreach (var remoteServer in _remoteController.RemoteServers)
-            {
-                var disposable = _remoteController.IsOnline(remoteServer)
-                    .Subscribe(o =>
-                    {
-                        onlineStatuses[remoteServer] = o;
-                        StateHasChanged();
-                    });
-                disposables.Add(disposable);
-            }
+            return;
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
+        foreach (var remoteServer in _remoteServersProvider.RemoteServers)
+        {
+            var disposable = remoteServer.IsOnline.Subscribe(o =>
+            {
+                InvokeAsync(() =>
+                {
+                    onlineStatuses[remoteServer] = o;
+                    StateHasChanged();
+                });
+            });
+            disposables.Add(disposable);
+        }
     }
 
     public void Dispose()

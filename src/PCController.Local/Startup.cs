@@ -43,16 +43,17 @@ namespace PCController.Local
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 services.AddScoped<IControllerService, WindowsControllerService>();
+                services.AddScoped<INativeExtensions, WindowsNativeExtensions>();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 services.AddScoped<IControllerService, LinuxControllerService>();
+                services.AddScoped<INativeExtensions, LinuxNativeExtensions>();
             }
-            else
-            {
-                services.AddScoped<IControllerService, NotSupportedControllerService>();
-            }
-            services.AddScoped<IRemoteControllerService, RemoteControllerService>();
+
+            services.AddScoped<IProcessHelper, ProcessHelper>();
+            
+            services.AddScoped<IRemoteServersProvider, RemoteServersProvider>();
 
             services.Configure<Config>(Configuration.GetSection("PCController"));
         }
