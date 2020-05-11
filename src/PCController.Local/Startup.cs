@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PCController.Local.Hubs;
 using PCController.Local.Services;
 
 namespace PCController.Local
@@ -30,6 +31,7 @@ namespace PCController.Local
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddSignalR();
             services.AddServerSideBlazor();
             services.AddBlazoredLocalStorage();
 
@@ -76,6 +78,7 @@ namespace PCController.Local
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<StatusHub>($"/statusHub");
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");

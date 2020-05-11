@@ -14,6 +14,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using PCController.Local.Hubs;
 
 namespace PCController.Local.Services
 {
@@ -62,55 +64,55 @@ namespace PCController.Local.Services
         {
             return Observable.Create<OnlineStatus>(async (observer, cancellationToken) =>
             {
-                var pingSender = new Ping();
-                OnlineStatus previousStatus = OnlineStatus.Unknown;
-                while (!cancellationToken.IsCancellationRequested)
+                while (true)
                 {
-                    try
+                    observer.OnNext(OnlineStatus.Offline);
+
+                    var ip = remoteServer.Uri.Host;
+                    if (ip == "localhost")
                     {
-                        // Create a buffer of 32 bytes of data to be transmitted.
-                        int timeout = 120;
-                        PingReply reply = await pingSender.SendPingAsync(remoteServer.Uri.Host, timeout);
-                        if (reply.Status != IPStatus.Success)
-                        {
-                            previousStatus = OnlineStatus.Offline;
-                            observer.OnNext(previousStatus);
-                        }
-                        else
-                        {
-                            if (previousStatus == OnlineStatus.Offline)
-                            {
-                                previousStatus = OnlineStatus.DeviceOnline;
-                                observer.OnNext(previousStatus);
-                            }
-                            var routeUri = new Uri(ControllerController.StatusRoute, UriKind.Relative);
-                            var res = new Uri(remoteServer.Uri, routeUri);
-                            var message = new HttpRequestMessage(HttpMethod.Get, res);
-                            var cancel = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                            var requestTask = _httpClient.SendAsync(message, cancel.Token);
-                            var aaa = await Task.WhenAny(requestTask, Task.Delay(TimeSpan.FromSeconds(10)));
-                            if (aaa is Task<HttpResponseMessage> response && (await response).IsSuccessStatusCode)
-                            {
-                                previousStatus = OnlineStatus.ServerOnline;
-                                observer.OnNext(previousStatus);
-                            }
-                            else
-                            {
-                                cancel.Cancel();
-                                previousStatus = OnlineStatus.DeviceOnline;
-                                observer.OnNext(previousStatus);
-                            }
-                        }
-                        await Task.Delay(TimeSpan.FromSeconds(5));
+                        ip = "127.0.0.1";
                     }
-                    catch
+                    bool isPinged;
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
-                        observer.OnNext(OnlineStatus.Unknown);
-                        throw;
+                        isPinged = await StartProcessAndCheckExitCodeAsync("/bin/ping", $"{ip} -c 1");
                     }
+                    else
+                    {
+                        isPinged = await StartProcessAndCheckExitCodeAsync("ping", $"{ip} -n 1");
+                    }
+                    if (!isPinged)
+                    {
+                        observer.OnNext(OnlineStatus.Offline);
+                        await Task.Delay(1000);
+                        continue;
+                    }
+                    observer.OnNext(OnlineStatus.DeviceOnline);
+
+                    var hubConnection = new HubConnectionBuilder()
+                        .WithUrl($"{remoteServer.Uri}/statusHub")
+                        .Build();
+
+                    var tcs = new TaskCompletionSource<Exception>();
+                    hubConnection.Closed += async (e) =>
+                    {
+                        tcs.SetResult(e);
+                    };
+                    hubConnection.Reconnected += async (e) =>
+                    {
+                    };
+
+                    hubConnection.Reconnecting += async (e) =>
+                    {
+                    };
+
+                    await hubConnection.StartAsync(cancellationToken);
+                    observer.OnNext(OnlineStatus.ServerOnline);
+                    await tcs.Task;
                 }
             })
-                .Distinct();
+            .Distinct();
         }
 
         public async Task InvokeCommandAsync(Command command, RemoteServer remoteServer, CancellationToken cancellationToken)
@@ -151,6 +153,20 @@ namespace PCController.Local.Services
             var process = System.Diagnostics.Process.Start(startInfo);
             await process.WaitForExitAsync();
             return await process.StandardOutput.ReadToEndAsync();
+        }
+
+        private async Task<bool> StartProcessAndCheckExitCodeAsync(string path, string args)
+        {
+            var startInfo = new ProcessStartInfo()
+            {
+                FileName = path,
+                Arguments = args,
+                RedirectStandardOutput = true,
+                UseShellExecute = false
+            };
+            var process = System.Diagnostics.Process.Start(startInfo);
+            await process.WaitForExitAsync();
+            return process.ExitCode == 0;
         }
     }
 }
