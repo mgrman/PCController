@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using PCController.Local.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PCController.Local.Services
 {
@@ -64,6 +65,13 @@ namespace PCController.Local.Services
         {
             return Observable.Create<OnlineStatus>(async (observer, cancellationToken) =>
             {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithUrl(new Uri(remoteServer.Uri, StatusHub.RelativeUri))
+                    .Build();
+                hubConnection.KeepAliveInterval = TimeSpan.FromMilliseconds(1000);
+                hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(30000);
+                hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(500);
+
                 while (true)
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -75,20 +83,7 @@ namespace PCController.Local.Services
                     {
                         observer.OnNext(OnlineStatus.Offline);
 
-                        var ip = remoteServer.Uri.Host;
-                        if (ip == "localhost")
-                        {
-                            ip = "127.0.0.1";
-                        }
-                        bool isPinged;
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                        {
-                            isPinged = await StartProcessAndCheckExitCodeAsync("/bin/ping", $"{ip} -c 1");
-                        }
-                        else
-                        {
-                            isPinged = await StartProcessAndCheckExitCodeAsync("ping", $"{ip} -n 1");
-                        }
+                        bool isPinged = await PingServer(remoteServer);
                         if (!isPinged)
                         {
                             observer.OnNext(OnlineStatus.Offline);
@@ -97,25 +92,15 @@ namespace PCController.Local.Services
                         }
                         observer.OnNext(OnlineStatus.DeviceOnline);
 
-                        var hubConnection = new HubConnectionBuilder()
-                            .WithUrl($"{remoteServer.Uri}statusHub")
-                            .WithAutomaticReconnect()
-                            .Build();
-
                         var tcs = new TaskCompletionSource<Exception>();
                         hubConnection.Closed += async (e) =>
                         {
                             tcs.SetResult(e);
                         };
-                        hubConnection.Reconnected += async (e) =>
+                        if (hubConnection.State == HubConnectionState.Disconnected)
                         {
-                        };
-
-                        hubConnection.Reconnecting += async (e) =>
-                        {
-                        };
-
-                        await hubConnection.StartAsync(cancellationToken);
+                            await hubConnection.StartAsync(cancellationToken);
+                        }
                         observer.OnNext(OnlineStatus.ServerOnline);
                         await tcs.Task;
                     }
@@ -125,13 +110,32 @@ namespace PCController.Local.Services
                         continue;
                     }
                 }
-            })
-            .Distinct();
+            });
         }
 
         public async Task InvokeCommandAsync(Command command, RemoteServer remoteServer, CancellationToken cancellationToken)
         {
             await ExecuteRoute(remoteServer, command, cancellationToken);
+        }
+
+        private async Task<bool> PingServer(RemoteServer remoteServer)
+        {
+            var ip = remoteServer.Uri.Host;
+            if (ip == "localhost")
+            {
+                ip = "127.0.0.1";
+            }
+            bool isPinged;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                isPinged = await StartProcessAndCheckExitCodeAsync("/bin/ping", $"{ip} -c 1");
+            }
+            else
+            {
+                isPinged = await StartProcessAndCheckExitCodeAsync("ping", $"{ip} -n 1");
+            }
+
+            return isPinged;
         }
 
         private async Task ExecuteRoute(RemoteServer remoteServer, Command command, CancellationToken cancellationToken)

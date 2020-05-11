@@ -8,6 +8,9 @@ namespace PCController.Local.Hubs
 {
     public class StatusHub : Hub
     {
+        public const string RelativePath = "/statusHub";
+        public static readonly Uri RelativeUri = new Uri(RelativePath, UriKind.Relative);
+
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();

@@ -78,7 +78,7 @@ namespace PCController.Local
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<StatusHub>($"/statusHub");
+                endpoints.MapHub<StatusHub>(StatusHub.RelativePath);
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
