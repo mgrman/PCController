@@ -4,6 +4,7 @@
 @inject IPinHandler _pinAuthenticationStateProvider
 @inject IControllerService _controller
 @inject IRemoteServersProvider _remoteServersProvider
+@inject ISignalRManager _statusHub
 
 <h1>Hello!</h1>
 
@@ -21,7 +22,7 @@
                     <p class="card-text">Lorem ipsum.</p>
 
                     @foreach (var command in Enum.GetValues(typeof(Command))
-                        .Cast<Command>())
+ .Cast<Command>())
                     {
                         <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
                     }
@@ -33,14 +34,49 @@
         {
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">@remoteServer.Uri</h5>
+                    <h5 class="card-title">@remoteServer.Id </h5>
+                    <p class="card-text">@remoteServer.Uri </p>
                     <p class="card-text">@(onlineStatuses.TryGetValue(remoteServer, out var res) ? res : OnlineStatus.Unknown)</p>
+                    <p class="card-text">
+                        @if (_statusHub.IsConnected(remoteServer.Id))
+                        {
+                            <text>
+                                Machine is connected back to this one
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+                                Machine is NOT connected back to this one
+                            </text>
 
-                    <button type="button"  disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res3) ? res3 : OnlineStatus.Unknown) != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await remoteServer.TryToWakeUpAsync(System.Threading.CancellationToken.None)">WakeUp</button>
+                        }
+                    </p>
+                    <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res3) ? res3 : OnlineStatus.Unknown) != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await remoteServer.TryToWakeUpAsync(System.Threading.CancellationToken.None)">WakeUp</button>
                     @foreach (var command in Enum.GetValues(typeof(Command))
-                        .Cast<Command>())
+.Cast<Command>())
                     {
                         <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res2) ? res2 : OnlineStatus.Unknown) != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async () => await remoteServer.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
+                    }
+                </div>
+            </div>
+        }
+
+        @foreach (var extraId in _statusHub.ConnectedIds.Except(_remoteServersProvider.RemoteServers.Select(o => o.Id)))
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">@extraId</h5>
+                    <p class="card-text">???</p>
+                    <p class="card-text">@(OnlineStatus.ServerOnline)</p>
+                    <p class="card-text">
+                        Machine is connected back to this one
+                    </p>
+                    <button type="button" disabled="@true" class="btn btn-info">WakeUp</button>
+                    @foreach (var command in Enum.GetValues(typeof(Command))
+.Cast<Command>())
+                    {
+                        <button type="button" class="btn btn-info">@command</button>
                     }
                 </div>
             </div>
@@ -81,6 +117,12 @@
             });
             disposables.Add(disposable);
         }
+        _statusHub.OnlineStatusChanged += ConcurentStateHasChanged;
+    }
+
+    private void ConcurentStateHasChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
@@ -89,6 +131,7 @@
         {
             disposable.Dispose();
         }
+        _statusHub.OnlineStatusChanged -= ConcurentStateHasChanged;
     }
 
 }

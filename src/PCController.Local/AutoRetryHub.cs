@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Options;
 using PCController.Local.Hubs;
 using PCController.Local.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -20,9 +22,13 @@ namespace PCController.Local
         private readonly HubConnection _hubConnection;
         private readonly ISubject<bool> _isOnline = new Subject<bool>();
 
-        public AutoRetryHub(Uri serverUri)
+        public AutoRetryHub(Uri serverUri, string machineID)
         {
-            _hubConnection = new HubConnectionBuilder().WithUrl(new Uri(serverUri, StatusHub.RelativeUri))
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(new Uri(serverUri, StatusHub.RelativeUri), o =>
+                {
+                    o.Headers.Add(StatusHub.IDHeader, machineID);
+                })
                 .WithAutomaticReconnect()
                 .Build();
             _hubConnection.KeepAliveInterval = TimeSpan.FromMilliseconds(1000);
@@ -74,20 +80,21 @@ namespace PCController.Local
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                try
+                if (_hubConnection.State == HubConnectionState.Disconnected)
                 {
-                    if (_hubConnection.State == HubConnectionState.Disconnected)
+                    try
                     {
                         await _hubConnection.StartAsync(cancellationToken);
-                        _isOnline.OnNext(true);
                     }
+                    catch (HttpRequestException)
+                    {
+                        await Task.Delay(1000, cancellationToken);
+                        return;
+                    }
+                    _isOnline.OnNext(true);
+                }
 
-                    return;
-                }
-                catch
-                {
-                    await Task.Delay(1000, cancellationToken);
-                }
+                return;
             }
         }
 

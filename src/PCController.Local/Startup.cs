@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using PCController.Local.Hubs;
 using PCController.Local.Services;
 
@@ -42,25 +43,32 @@ namespace PCController.Local
             services.AddHttpClient();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                services.AddScoped<IControllerService, WindowsControllerService>();
-                services.AddScoped<INativeExtensions, WindowsNativeExtensions>();
+                services.AddSingleton<IControllerService, WindowsControllerService>();
+                services.AddSingleton<INativeExtensions, WindowsNativeExtensions>();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                services.AddScoped<IControllerService, LinuxControllerService>();
-                services.AddScoped<INativeExtensions, LinuxNativeExtensions>();
+                services.AddSingleton<IControllerService, LinuxControllerService>();
+                services.AddSingleton<INativeExtensions, LinuxNativeExtensions>();
             }
 
-            services.AddScoped<IProcessHelper, ProcessHelper>();
-            
-            services.AddScoped<IRemoteServersProvider, RemoteServersProvider>();
+            services.AddSingleton<IProcessHelper, ProcessHelper>();
 
+            services.AddSingleton<IRemoteServersProvider, RemoteServersProvider>();
+
+            services.AddSingleton<ISignalRManager, SignalRManager>();
             services.Configure<Config>(Configuration.GetSection("PCController"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var config = app.ApplicationServices.GetService<IOptions<Config>>();
+            if (string.IsNullOrEmpty(config.Value.ID))
+            {
+                throw new InvalidOperationException("Missing ID in configuration!!!");
+            }
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

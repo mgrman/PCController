@@ -9,6 +9,8 @@ namespace PCController.Local
 {
     public class RemoteServerConfig
     {
+        public string ID { get; set; }
+        public string MacAddress { get; set; }
         public Uri Uri { get; set; }
         public string PIN { get; set; }
     }

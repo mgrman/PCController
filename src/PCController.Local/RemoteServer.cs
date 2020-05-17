@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using PCController.Local.Controller;
+using Microsoft.Extensions.Options;
 
 namespace PCController.Local
 {
@@ -22,21 +23,22 @@ namespace PCController.Local
         private readonly INativeExtensions _nativeExtensions;
         private readonly AutoRetryHub _hub;
         private readonly BehaviourSubjectWithTracking<OnlineStatus> _isOnline;
-        private HttpClient _httpClient;
 
-        public RemoteServer(RemoteServerConfig config, INativeExtensions nativeExtensions, HttpClient httpClient)
+        public RemoteServer(RemoteServerConfig serverConfig, INativeExtensions nativeExtensions, string machineID)
         {
-            _httpClient = httpClient;
             _nativeExtensions = nativeExtensions;
-            Uri = config.Uri;
-            PIN = config.PIN;
+            Id = serverConfig.ID;
+            Uri = serverConfig.Uri;
+            MacAddress = serverConfig.MacAddress;
+
+            PIN = serverConfig.PIN;
             Ip = Uri.Host;
             if (Ip == "localhost")
             {
                 Ip = "127.0.0.1";
             }
 
-            _hub = new AutoRetryHub(Uri);
+            _hub = new AutoRetryHub(Uri, machineID);
 
             _isOnline = new BehaviourSubjectWithTracking<OnlineStatus>(OnlineStatus.Offline);
             _isOnline.OnSubscibersChanged.Subscribe(_hub.IsActive);
@@ -45,7 +47,11 @@ namespace PCController.Local
                 .Subscribe();
         }
 
+        public string Id { get; set; }
+
         public Uri Uri { get; set; }
+
+        public string MacAddress { get; set; }
 
         public string Ip { get; }
 
