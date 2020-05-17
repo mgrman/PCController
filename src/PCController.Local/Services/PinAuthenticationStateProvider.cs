@@ -43,15 +43,14 @@ namespace PCController.Local.Services
             }
         }
 
-        public async Task<bool> InitializeJSAsync()
+        public async Task InitializeJSAsync()
         {
             if (_initialized)
             {
-                return false;
+                return;
             }
             _initialized = true;
             PIN = await _localStorage.GetItemAsync<string>("pin");
-            return true;
         }
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()

@@ -6,6 +6,6 @@ namespace PCController.Local.Services
     {
         string PIN { get; set; }
 
-        Task<bool> InitializeJSAsync();
+        Task InitializeJSAsync();
     }
 }

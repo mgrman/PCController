@@ -51,6 +51,11 @@ namespace PCController.Local
             IsActive.DistinctUntilChanged()
                 .SelectMany(IsActiveChanged)
                 .Subscribe();
+
+            _isOnline.Subscribe(o =>
+            {
+                Console.WriteLine($"AutoRetryHub.IsOnline:{o}");
+            });
         }
 
         public IObservable<bool> IsServerOnline => _isOnline;
@@ -89,7 +94,7 @@ namespace PCController.Local
                     catch (HttpRequestException)
                     {
                         await Task.Delay(1000, cancellationToken);
-                        return;
+                        continue;
                     }
                     _isOnline.OnNext(true);
                 }

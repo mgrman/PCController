@@ -1,5 +1,5 @@
 ﻿@page "/"
-@implements IDisposable
+@inherits PCControllerComponentBase
 
 @inject IPinHandler _pinAuthenticationStateProvider
 @inject IControllerService _controller
@@ -22,7 +22,7 @@
                     <p class="card-text">Lorem ipsum.</p>
 
                     @foreach (var command in Enum.GetValues(typeof(Command))
- .Cast<Command>())
+.Cast<Command>())
                     {
                         <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
                     }
@@ -86,36 +86,31 @@
 
 @functions {
 
-    private readonly List<IDisposable> disposables = new List<IDisposable>();
     private readonly Dictionary<RemoteServer, OnlineStatus> onlineStatuses = new Dictionary<RemoteServer, OnlineStatus>();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterFirstRenderAsync()
     {
-        var change = await _pinAuthenticationStateProvider.InitializeJSAsync();
-        if (change)
-        {
-            StateHasChanged();
-        }
-    }
+        await base.OnAfterFirstRenderAsync();
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-        if (!firstRender)
-        {
-            return;
-        }
+        await _pinAuthenticationStateProvider.InitializeJSAsync();
+        StateHasChanged();
+
         foreach (var remoteServer in _remoteServersProvider.RemoteServers)
         {
-            var disposable = remoteServer.IsOnline.Subscribe(o =>
-            {
-                InvokeAsync(() =>
+            remoteServer.IsOnline
+                .SubscribeAsync(async (o, c) =>
                 {
-                    onlineStatuses[remoteServer] = o;
-                    StateHasChanged();
-                });
-            });
-            disposables.Add(disposable);
+                    await InvokeAsync(() =>
+                    {
+                        if (c.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                        onlineStatuses[remoteServer] = o;
+                        StateHasChanged();
+                    });
+                })
+                .TrackSubscription(this);
         }
         _statusHub.OnlineStatusChanged += ConcurentStateHasChanged;
     }
@@ -125,13 +120,10 @@
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        foreach (var disposable in disposables)
-        {
-            disposable.Dispose();
-        }
+        base.Dispose();
+
         _statusHub.OnlineStatusChanged -= ConcurentStateHasChanged;
     }
-
 }

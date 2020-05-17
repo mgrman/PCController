@@ -43,8 +43,9 @@ namespace PCController.Local
             _isOnline = new BehaviourSubjectWithTracking<OnlineStatus>(OnlineStatus.Offline);
             _isOnline.OnSubscibersChanged.Subscribe(_hub.IsActive);
 
-            _hub.IsServerOnline.SelectMany(IsOnlineChanged)
-                .Subscribe();
+            var cts = new CancellationTokenSource();
+            _hub.IsServerOnline
+                .SubscribeAsync(IsOnlineChanged);
         }
 
         public string Id { get; set; }

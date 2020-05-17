@@ -12,6 +12,8 @@ namespace PCController.Local
 
         private bool _previousHasObservers;
 
+        private volatile int _subscribers;
+
         public BehaviourSubjectWithTracking(T defaultValue)
         {
             _behaviorSubject = new BehaviorSubject<T>(defaultValue);
@@ -19,8 +21,8 @@ namespace PCController.Local
 
         public IObservable<bool> OnSubscibersChanged => _onSubscibersChanged;
 
+        public override bool HasObservers => _subscribers > 0;
         public override bool IsDisposed => _behaviorSubject.IsDisposed;
-        public override bool HasObservers => _behaviorSubject.HasObservers;
 
         public override void Dispose()
         {
@@ -39,15 +41,18 @@ namespace PCController.Local
 
         public override void OnNext(T value)
         {
+            Console.WriteLine($"IsOnline:{value}");
             _behaviorSubject.OnNext(value);
         }
 
         public override IDisposable Subscribe(IObserver<T> observer)
         {
+            _subscribers++;
             var subscription = _behaviorSubject.Subscribe(observer);
             UpdateOnSubscibersChanged();
             return Disposable.Create(() =>
             {
+                _subscribers--;
                 subscription.Dispose();
                 UpdateOnSubscibersChanged();
             });
