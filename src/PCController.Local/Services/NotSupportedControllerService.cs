@@ -11,7 +11,7 @@ namespace PCController.Local.Services
     {
         public bool IsPlatformSupported => false;
 
-        public Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
+        public Task InvokeCommandAsync(string pin,Command command, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }

@@ -10,6 +10,6 @@ namespace PCController.Local.Services
     {
         bool IsPlatformSupported { get; }
 
-        Task InvokeCommandAsync(Command command, CancellationToken cancellationToken);
+        Task InvokeCommandAsync(string pin, Command command, CancellationToken cancellationToken);
     }
 }

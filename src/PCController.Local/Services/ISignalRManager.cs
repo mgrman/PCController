@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PCController.Local.Services
 {
     public interface ISignalRManager
     {
-        event Action OnlineStatusChanged;
+        void AddClient(string connectionId, string machineName);
 
-        IEnumerable<string> ConnectedIds { get; }
+        void RemoveClient(string connectionId);
 
-        void AddClient(string id, string requestUri);
+        Task InvokeCommandAsync(string connectionId, Command command, string pin, CancellationToken cancellationToken);
+        
+        IObservable<IEnumerable<SignalRConnectionServer>> Connections { get; }
 
-        bool IsConnected(string machineID);
+        IObservable<SignalRConnectionServer> NewConnectedDevices { get; }
 
-        void RemoveClient(string id);
+        IObservable<SignalRConnectionServer> NewDisconnectedDevices { get; }
     }
 }

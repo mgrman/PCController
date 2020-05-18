@@ -7,9 +7,9 @@ namespace PCController.Local.Services
 {
     public class RemoteServersProvider : IRemoteServersProvider
     {
-        public RemoteServersProvider(IOptions<Config> config, INativeExtensions nativeExtensions)
+        public RemoteServersProvider(IOptions<Config> config, INativeExtensions nativeExtensions, IControllerService controllerService)
         {
-            RemoteServers = config.Value.RemoteServers.Select(o => new RemoteServer(o, nativeExtensions, config.Value.ID))
+            RemoteServers = config.Value.RemoteServers.Select(o => new RemoteServer(o, nativeExtensions, config.Value.Name, controllerService))
                 .ToArray();
         }
 

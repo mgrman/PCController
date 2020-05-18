@@ -1,37 +1,56 @@
-﻿using System;
+﻿using PCController.Local.Hubs;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PCController.Local.Services
 {
     public class SignalRManager : ISignalRManager
     {
-        private ConcurrentDictionary<string, string> _connectedIds = new ConcurrentDictionary<string, string>();
+        private readonly IHubContext<StatusHub> hub;
+        private ConcurrentDictionary<string, SignalRConnectionServer> _connectedIds = new ConcurrentDictionary<string, SignalRConnectionServer>();
 
-        public event Action OnlineStatusChanged;
+        private Subject<IEnumerable<SignalRConnectionServer>> _connections = new Subject<IEnumerable<SignalRConnectionServer>>();
+        private Subject<SignalRConnectionServer> _newConnectedDevices = new Subject<SignalRConnectionServer>();
+        private Subject<SignalRConnectionServer> _newDisconnectedDevices = new Subject<SignalRConnectionServer>();
 
-        public IEnumerable<string> ConnectedIds => _connectedIds.Values;
-
-        public bool IsConnected(string machineID)
+        public SignalRManager(IHubContext<StatusHub> hub)
         {
-            return _connectedIds.Values.Contains(machineID);
+            this.hub = hub;
         }
 
-        public void AddClient(string id, string requestUri)
+        public IObservable<IEnumerable<SignalRConnectionServer>> Connections => _connections;
+
+        public IObservable<SignalRConnectionServer> NewConnectedDevices => _newConnectedDevices;
+
+        public IObservable<SignalRConnectionServer> NewDisconnectedDevices => _newDisconnectedDevices;
+
+        public async Task InvokeCommandAsync(string connectionId, Command command, string pin, CancellationToken cancellationToken)
         {
-            _connectedIds[id] = requestUri;
-            OnlineStatusChanged?.Invoke();
+            await hub.Clients.Client(connectionId).SendAsync("invoke", command, pin, cancellationToken);
         }
 
-        public void RemoveClient(string id)
+        public void AddClient(string connectionId, string machineName)
         {
-            if (!_connectedIds.Remove(id, out _))
+            var value = new SignalRConnectionServer(this, machineName, connectionId);
+            _connectedIds[value.SignalRConnectionId] = value;
+            _newConnectedDevices.OnNext(value);
+            _connections.OnNext(_connectedIds.Values);
+        }
+
+        public void RemoveClient(string connectionId)
+        {
+            if (_connectedIds.Remove(connectionId, out var value))
             {
-                //throw new InvalidOperationException($"Disconnected client {id} which was never connected!");
+                _newDisconnectedDevices.OnNext(value);
             }
-            OnlineStatusChanged?.Invoke();
+
+            _connections.OnNext(_connectedIds.Values);
         }
     }
 }

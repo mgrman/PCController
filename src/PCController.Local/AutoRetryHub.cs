@@ -22,7 +22,7 @@ namespace PCController.Local
         private readonly HubConnection _hubConnection;
         private readonly ISubject<bool> _isOnline = new Subject<bool>();
 
-        public AutoRetryHub(Uri serverUri, string machineID)
+        public AutoRetryHub(Uri serverUri, string machineID, IControllerService controllerService)
         {
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(new Uri(serverUri, StatusHub.RelativeUri), o =>
@@ -47,6 +47,10 @@ namespace PCController.Local
             {
                 _isOnline.OnNext(true);
             };
+            _hubConnection.On<Command, string>("invoke", async (cmd, pin) =>
+              {
+                  await controllerService.InvokeCommandAsync(pin,cmd, CancellationToken.None);
+              });
 
             IsActive.DistinctUntilChanged()
                 .SelectMany(IsActiveChanged)
@@ -91,7 +95,7 @@ namespace PCController.Local
                     {
                         await _hubConnection.StartAsync(cancellationToken);
                     }
-                    catch (HttpRequestException)
+                    catch (Exception)
                     {
                         await Task.Delay(1000, cancellationToken);
                         continue;

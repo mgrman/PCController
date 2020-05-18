@@ -64,7 +64,7 @@ namespace PCController.Local
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             var config = app.ApplicationServices.GetService<IOptions<Config>>();
-            if (string.IsNullOrEmpty(config.Value.ID))
+            if (string.IsNullOrEmpty(config.Value.Name))
             {
                 throw new InvalidOperationException("Missing ID in configuration!!!");
             }

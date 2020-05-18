@@ -4,15 +4,27 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace PCController.Local.Services
 {
     public class LinuxControllerService : IControllerService
     {
+        private Config _config;
+
         public bool IsPlatformSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
-        public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
+        public LinuxControllerService(IOptions<Config> config)
         {
+            _config = config.Value;
+        }
+        
+        public async Task InvokeCommandAsync(string pin, Command command, CancellationToken cancellationToken)
+        {
+            if (_config.PIN != pin)
+            {
+                return;
+            }
             switch (command)
             {
                 case Command.Shutdown:

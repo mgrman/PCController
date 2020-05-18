@@ -7,7 +7,7 @@ namespace PCController.Local
 {
     public class Config
     {
-        public string ID { get; set; }
+        public string Name { get; set; }
 
         public string PIN { get; set; }
 

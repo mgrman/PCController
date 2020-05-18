@@ -1,20 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using PCController.Local.Hubs;
-using PCController.Local.Services;
+﻿using PCController.Local.Services;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reactive;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using PCController.Local.Controller;
-using Microsoft.Extensions.Options;
 
 namespace PCController.Local
 {
@@ -24,10 +14,10 @@ namespace PCController.Local
         private readonly AutoRetryHub _hub;
         private readonly BehaviourSubjectWithTracking<OnlineStatus> _isOnline;
 
-        public RemoteServer(RemoteServerConfig serverConfig, INativeExtensions nativeExtensions, string machineID)
+        public RemoteServer(RemoteServerConfig serverConfig, INativeExtensions nativeExtensions, string machineID, IControllerService controllerService)
         {
             _nativeExtensions = nativeExtensions;
-            Id = serverConfig.ID;
+            Name = serverConfig.Name;
             Uri = serverConfig.Uri;
             MacAddress = serverConfig.MacAddress;
 
@@ -38,7 +28,7 @@ namespace PCController.Local
                 Ip = "127.0.0.1";
             }
 
-            _hub = new AutoRetryHub(Uri, machineID);
+            _hub = new AutoRetryHub(Uri, machineID, controllerService);
 
             _isOnline = new BehaviourSubjectWithTracking<OnlineStatus>(OnlineStatus.Offline);
             _isOnline.OnSubscibersChanged.Subscribe(_hub.IsActive);
@@ -48,7 +38,7 @@ namespace PCController.Local
                 .SubscribeAsync(IsOnlineChanged);
         }
 
-        public string Id { get; set; }
+        public string Name { get; set; }
 
         public Uri Uri { get; set; }
 
@@ -87,26 +77,38 @@ namespace PCController.Local
 
         private async Task<Unit> IsOnlineChanged(bool o, CancellationToken cancellationToken)
         {
-            if (o)
+            try
             {
-                _isOnline.OnNext(OnlineStatus.ServerOnline);
-            }
-            else
-            {
-                while (!cancellationToken.IsCancellationRequested)
+                if (o)
                 {
-                    bool isPinged = await _nativeExtensions.PingServer(this, cancellationToken);
-                    if (isPinged)
-                    {
-                        _isOnline.OnNext(OnlineStatus.DeviceOnline);
-                    }
-                    else
-                    {
-                        _isOnline.OnNext(OnlineStatus.Offline);
-                    }
-
-                    await Task.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken);
+                    _isOnline.OnNext(OnlineStatus.ServerOnline);
                 }
+                else
+                {
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        bool isPinged = await _nativeExtensions.PingServer(this, cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        if (isPinged)
+                        {
+                            _isOnline.OnNext(OnlineStatus.DeviceOnline);
+                        }
+                        else
+                        {
+                            _isOnline.OnNext(OnlineStatus.Offline);
+                        }
+
+                        await Task.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken);
+                    }
+                }
+            }
+            catch (TaskCanceledException)
+            {
+
+            }
+            catch (OperationCanceledException)
+            {
+                
             }
 
             return Unit.Default;

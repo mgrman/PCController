@@ -46,7 +46,7 @@ namespace PCController.Local.Controller
             {
                 return Unauthorized();
             }
-            await _controllerService.InvokeCommandAsync(command, cancellationToken);
+            await _controllerService.InvokeCommandAsync(pin,command, cancellationToken);
             return Ok();
         }
     }

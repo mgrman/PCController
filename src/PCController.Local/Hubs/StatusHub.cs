@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using PCController.Local.Services;
-using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace PCController.Local.Hubs
 {
@@ -51,12 +47,12 @@ namespace PCController.Local.Hubs
                 throw new InvalidOperationException("PlatformNotSupported");
             }
 
-            if (_config.CurrentValue.PIN != pin)
-            {
-                throw new InvalidOperationException("InvalidPIN");
-            }
+            await _controllerService.InvokeCommandAsync(pin, command, CancellationToken.None);
+        }
 
-            await _controllerService.InvokeCommandAsync(command, CancellationToken.None);
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
         }
     }
 }

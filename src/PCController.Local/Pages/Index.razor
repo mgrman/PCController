@@ -24,7 +24,7 @@
                     @foreach (var command in Enum.GetValues(typeof(Command))
 .Cast<Command>())
                     {
-                        <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
+                        <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(_pinAuthenticationStateProvider.PIN,command, System.Threading.CancellationToken.None)">@command</button>
                     }
                 </div>
             </div>
@@ -34,24 +34,9 @@
         {
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">@remoteServer.Id </h5>
+                    <h5 class="card-title">@remoteServer.Name </h5>
                     <p class="card-text">@remoteServer.Uri </p>
                     <p class="card-text">@(onlineStatuses.TryGetValue(remoteServer, out var res) ? res : OnlineStatus.Unknown)</p>
-                    <p class="card-text">
-                        @if (_statusHub.IsConnected(remoteServer.Id))
-                        {
-                            <text>
-                                Machine is connected back to this one
-                            </text>
-                        }
-                        else
-                        {
-                            <text>
-                                Machine is NOT connected back to this one
-                            </text>
-
-                        }
-                    </p>
                     <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res3) ? res3 : OnlineStatus.Unknown) != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await remoteServer.TryToWakeUpAsync(System.Threading.CancellationToken.None)">WakeUp</button>
                     @foreach (var command in Enum.GetValues(typeof(Command))
 .Cast<Command>())
@@ -62,21 +47,24 @@
             </div>
         }
 
-        @foreach (var extraId in _statusHub.ConnectedIds.Except(_remoteServersProvider.RemoteServers.Select(o => o.Id)))
+        @foreach (var extraId in connections ?? Enumerable.Empty<SignalRConnectionServer>())
         {
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">@extraId</h5>
+                    <h5 class="card-title">@extraId.MachineName</h5>
                     <p class="card-text">???</p>
                     <p class="card-text">@(OnlineStatus.ServerOnline)</p>
                     <p class="card-text">
                         Machine is connected back to this one
                     </p>
+                    
+                    <input type="password" @bind-value="extraId.PIN"/>
+                    
                     <button type="button" disabled="@true" class="btn btn-info">WakeUp</button>
                     @foreach (var command in Enum.GetValues(typeof(Command))
 .Cast<Command>())
                     {
-                        <button type="button" class="btn btn-info">@command</button>
+                        <button type="button" class="btn btn-info"  @onclick="async () => await extraId.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
                     }
                 </div>
             </div>
@@ -87,6 +75,8 @@
 @functions {
 
     private readonly Dictionary<RemoteServer, OnlineStatus> onlineStatuses = new Dictionary<RemoteServer, OnlineStatus>();
+
+    private IEnumerable<SignalRConnectionServer> connections { get; set; }
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -112,7 +102,20 @@
                 })
                 .TrackSubscription(this);
         }
-        _statusHub.OnlineStatusChanged += ConcurentStateHasChanged;
+        _statusHub.Connections
+            .SubscribeAsync(async (o, c) =>
+            {
+                await InvokeAsync(() =>
+                {
+                    if (c.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    connections = o;
+                    StateHasChanged();
+                });
+            })
+            .TrackSubscription(this);
     }
 
     private void ConcurentStateHasChanged()
@@ -123,7 +126,5 @@
     public override void Dispose()
     {
         base.Dispose();
-
-        _statusHub.OnlineStatusChanged -= ConcurentStateHasChanged;
     }
 }
