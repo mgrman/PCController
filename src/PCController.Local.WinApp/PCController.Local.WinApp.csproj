@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet publish ../PCController.Local/PCController.Local.csproj --configuration &quot;$(ConfigurationName)&quot; --output &quot;$(TargetDir)/temp&quot;&#xD;&#xA;move &quot;$(TargetDir)/temp/wwwroot&quot; &quot;$(TargetDir)/wwwroot&quot;&#xD;&#xA;rmdir /s /q &quot;$(TargetDir)/temp&quot;" />
+    <Exec Command="rmdir /s /q &quot;$(TargetDir)/wwwroot&quot;&#xD;&#xA;dotnet publish ../PCController.Local/PCController.Local.csproj --configuration &quot;$(ConfigurationName)&quot; --output &quot;$(TargetDir)/temp&quot;&#xD;&#xA;move &quot;$(TargetDir)/temp/wwwroot&quot; &quot;$(TargetDir)/wwwroot&quot;&#xD;&#xA;rmdir /s /q &quot;$(TargetDir)/temp&quot;" />
   </Target>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
