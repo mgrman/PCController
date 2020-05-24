@@ -13,12 +13,12 @@ namespace PCController.Local
     internal class SelfServer : IRemoteServer
     {
         private readonly IControllerService controllerService;
-        private readonly BehaviorSubject<string> pin;
+        private readonly string pin;
 
         public SelfServer(IOptions<Config> config, IControllerService controllerService)
         {
             this.controllerService = controllerService;
-            this.pin = new BehaviorSubject<string>(config.Value.Pin);
+            this.pin = config.Value.Pin;
             this.IsOnline = Observable.Return(OnlineStatus.ServerOnline);
         }
 
@@ -26,10 +26,9 @@ namespace PCController.Local
 
         public IEnumerable<(string key, string value)> AdditionalInfo { get; } = Array.Empty<(string key, string value)>();
 
-        public ISubject<string> Pin => this.pin;
 
         public IObservable<OnlineStatus> IsOnline { get; }
 
-        public Task InvokeCommandAsync(Command command, CancellationToken cancellationToken) => this.controllerService.InvokeCommandAsync(this.pin.Value, command, cancellationToken);
+        public Task InvokeCommandAsync(Command command, CancellationToken cancellationToken) => this.controllerService.InvokeCommandAsync(this.pin, command, cancellationToken);
     }
 }

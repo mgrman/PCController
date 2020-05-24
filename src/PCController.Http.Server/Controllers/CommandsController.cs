@@ -1,13 +1,14 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using PCController.Local;
 using PCController.Local.Services;
 
-namespace PCController.Local.Controller
+namespace PCController.Http.Server.Controllers
 {
     [ApiController]
-    internal class ControllerController : ControllerBase
+    public class CommandsController : ControllerBase
     {
         public const string CommandWord = "command";
         public const string CommandPlaceholder = "{" + CommandWord + "}";
@@ -17,15 +18,23 @@ namespace PCController.Local.Controller
         private readonly Config config;
         private readonly IControllerService controllerService;
 
-        public ControllerController(IControllerService controllerService, IOptionsSnapshot<Config> config)
+        public CommandsController(IControllerService controllerService, IOptions<Config> config)
         {
             this.controllerService = controllerService;
             this.config = config.Value;
         }
 
-        [Route(StatusRoute)]
         [HttpGet]
+        [Route(StatusRoute)]
         public async Task<IActionResult> StatusCheck() => this.Ok();
+
+        [HttpGet]
+        [Route("/test")]
+        // GET
+        public IActionResult Index()
+        {
+            return this.Ok("Hello");
+        }
 
         [Route(CommandRoute)]
         [HttpPost]

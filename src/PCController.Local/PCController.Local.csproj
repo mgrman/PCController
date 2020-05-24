@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="2.1.5" />
+    <PackageReference Include="Blazored.Modal" Version="4.1.0" />
     <PackageReference Include="RabbitMQ.Client" Version="6.0.0" />
     <PackageReference Include="System.Reactive" Version="4.4.1" />
   </ItemGroup>
@@ -19,5 +20,11 @@
     <ProjectReference Include="..\PCController.Self\PCController.Self.csproj" />
     <ProjectReference Include="..\PCController.SignalR.Client\PCController.SignalR.Client.csproj" />
     <ProjectReference Include="..\PCController.SignalR.Server\PCController.SignalR.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Shared\ErrorDialog.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
   </ItemGroup>
 </Project>

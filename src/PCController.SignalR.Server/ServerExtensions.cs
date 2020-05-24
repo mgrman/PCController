@@ -14,7 +14,7 @@ namespace PCController.Common
             services.AddSignalR();
             services.AddSingleton<SignalRHubToClientConnectionServersProvider>();
             services.AddSingleton<ISignalRManager>(o => o.GetRequiredService<SignalRHubToClientConnectionServersProvider>());
-            services.AddSingleton<IRemoteServersProvider>(o=>o.GetRequiredService<SignalRHubToClientConnectionServersProvider>());
+            services.AddSingleton<IRemoteServersProvider>(o => o.GetRequiredService<SignalRHubToClientConnectionServersProvider>());
         }
 
         public static void MapSignalRServer(this IEndpointRouteBuilder endpoints)

@@ -8,7 +8,7 @@ using PCController.Local.Services;
 
 namespace PCController.Local
 {
-    internal class SignalRHubToClientConnectionServer : IRemoteServer
+    internal class SignalRHubToClientConnectionServer : IRemoteServer, IPinProtectedServer
     {
         private readonly BehaviorSubject<OnlineStatus> isOnline;
         private readonly BehaviorSubject<string> pin = new BehaviorSubject<string>("");

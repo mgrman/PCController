@@ -13,8 +13,6 @@ namespace PCController.Common.DataTypes
 
         IEnumerable<(string key, string value)> AdditionalInfo { get; }
 
-        ISubject<string> Pin { get; }
-
         IObservable<OnlineStatus> IsOnline { get; }
 
         Task InvokeCommandAsync(Command command, CancellationToken cancellationToken);

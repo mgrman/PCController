@@ -1,5 +1,6 @@
 using System;
 using Blazored.LocalStorage;
+using Blazored.Modal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +29,7 @@ namespace PCController.Local
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddBlazoredLocalStorage();
+            services.AddBlazoredModal();
 
             services.AddScoped<PinAuthenticationStateProvider>();
             services.AddScoped<AuthenticationStateProvider, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());

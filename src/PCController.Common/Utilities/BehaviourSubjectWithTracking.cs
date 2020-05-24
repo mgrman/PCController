@@ -21,6 +21,7 @@ namespace PCController.Local
         public IObservable<bool> OnSubscibersChanged => this.onSubscibersChanged;
 
         public T Value => this.behaviorSubject.Value;
+
         public override bool HasObservers => this.subscribers > 0;
 
         public override bool IsDisposed => this.behaviorSubject.IsDisposed;

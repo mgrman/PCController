@@ -5,6 +5,7 @@
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <OutputType>Library</OutputType>
+        <StartupObject />
     </PropertyGroup>
 
 
@@ -12,13 +13,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.0-preview.4.20257.10" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.0-preview.4.20257.10" />
         <PackageReference Include="System.Reactive" Version="4.4.1" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\background.png" />
-      <_ContentIncludedByDefault Remove="wwwroot\exampleJsInterop.js" />
-      <_ContentIncludedByDefault Remove="wwwroot\styles.css" />
     </ItemGroup>
 
 

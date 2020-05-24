@@ -23,7 +23,7 @@ namespace PCController.Local.Services
         {
             if (this.config.Pin != pin)
             {
-                return;
+                throw new InvalidOperationException("Invalid PIN");
             }
 
             switch (command)

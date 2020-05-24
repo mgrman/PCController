@@ -11,7 +11,7 @@ using PCController.Local.Services;
 
 namespace PCController.Local
 {
-    internal class SignalRClientToHubConnectionServer : INetworkAccessibleServer
+    internal class SignalRClientToHubConnectionServer : INetworkAccessibleServer, IPinProtectedServer
     {
         private readonly AutoRetryHub hub;
         private readonly BehaviourSubjectWithTracking<OnlineStatus> isOnline;

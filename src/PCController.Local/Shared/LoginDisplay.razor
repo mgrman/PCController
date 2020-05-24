@@ -1,34 +1,3 @@
-﻿@using System.Security.Principal
-@implements IDisposable
-@inject AuthenticationStateProvider StateProvider
-
-<AuthorizeView>
-    Hello, @User.Identity.Name!
+﻿<AuthorizeView>
+    Hello, @context.User.Identity.Name!
 </AuthorizeView>
-
-@functions
-{
-    IPrincipal User { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        User = (await StateProvider.GetAuthenticationStateAsync()).User;
-        StateProvider.AuthenticationStateChanged += AuthenticationStateChangedHandler;
-    }
-
-    protected async void AuthenticationStateChangedHandler(Task<AuthenticationState> task)
-    {
-        var state = await task;
-        User = state.User;
-
-        await InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
-
-    public void Dispose()
-    {
-        StateProvider.AuthenticationStateChanged -= AuthenticationStateChangedHandler;
-    }
-}

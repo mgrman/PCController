@@ -40,7 +40,7 @@ namespace PCController.Local
             {
                 this.isOnline.OnNext(true);
             };
-            this.hubConnection.On<Command, string>("invoke",
+            this.hubConnection.On<Command, string>(SignalRConfig.InvokeCommandMethodName,
                 async (cmd, pin) =>
                 {
                     await controllerService.InvokeCommandAsync(pin, cmd, CancellationToken.None);

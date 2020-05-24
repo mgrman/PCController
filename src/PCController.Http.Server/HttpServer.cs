@@ -2,23 +2,21 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.NetworkInformation;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using PCController.Common.DataTypes;
-using PCController.Local.Controller;
+using PCController.Http.Server.Controllers;
 using PCController.Local.Services;
 
 namespace PCController.Local
 {
-    internal class HttpServer : INetworkAccessibleServer
+    internal class HttpServer : INetworkAccessibleServer, IPinProtectedServer
     {
         private readonly HttpClient httpClient;
+        private readonly BehaviourSubjectWithTracking<OnlineStatus> isOnline = new BehaviourSubjectWithTracking<OnlineStatus>(OnlineStatus.Unknown);
         private readonly INativeExtensions nativeExtensions;
         private readonly BehaviorSubject<string> pin = new BehaviorSubject<string>("");
-        private readonly BehaviourSubjectWithTracking<OnlineStatus> isOnline = new BehaviourSubjectWithTracking<OnlineStatus>( OnlineStatus.Unknown);
 
         public HttpServer(RemoteServerConfig serverConfig, HttpClient httpClient, INativeExtensions nativeExtensions)
         {
@@ -41,23 +39,24 @@ namespace PCController.Local
                 {
                     return;
                 }
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
                         // Create a buffer of 32 bytes of data to be transmitted.
-                        int timeout = 120;
-                        var isOnline = await this.nativeExtensions.PingServerAsync(Ip, cancellationToken);
+                        var timeout = 120;
+                        var isOnline = await this.nativeExtensions.PingServerAsync(this.Ip, cancellationToken);
                         if (!isOnline)
                         {
-                            if(this.isOnline.Value!= OnlineStatus.Offline)
+                            if (this.isOnline.Value != OnlineStatus.Offline)
                             {
                                 this.isOnline.OnNext(OnlineStatus.Offline);
                             }
                         }
                         else
                         {
-                            var routeUri = new Uri(ControllerController.StatusRoute, UriKind.Relative);
+                            var routeUri = new Uri(CommandsController.StatusRoute, UriKind.Relative);
                             var res = new Uri(this.Uri, routeUri);
                             var message = new HttpRequestMessage(HttpMethod.Get, res);
                             var cancel = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -80,7 +79,7 @@ namespace PCController.Local
                             }
                         }
                     }
-                    catch (Exception )
+                    catch (Exception)
                     {
                         if (this.isOnline.Value != OnlineStatus.Unknown)
                         {
@@ -120,9 +119,9 @@ namespace PCController.Local
         public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
         {
             var content = new StringContent(string.Empty);
-            content.Headers.Add(ControllerController.PinHeader, this.pin.Value);
+            content.Headers.Add(CommandsController.PinHeader, this.pin.Value);
 
-            var routeUri = new Uri(ControllerController.CommandRoute.Replace(ControllerController.CommandPlaceholder, command.ToString()), UriKind.Relative);
+            var routeUri = new Uri(CommandsController.CommandRoute.Replace(CommandsController.CommandPlaceholder, command.ToString()), UriKind.Relative);
             var res = new Uri(this.Uri, routeUri);
 
             var response = await this.httpClient.PostAsync(res, content, cancellationToken);

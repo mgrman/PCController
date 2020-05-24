@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using PCController.Common.DataTypes;
 using PCController.Local.Hubs;
+using PCController.SignalR.Common;
 
 namespace PCController.Local.Services
 {
@@ -36,7 +37,7 @@ namespace PCController.Local.Services
         public async Task InvokeCommandAsync(string connectionId, Command command, string pin, CancellationToken cancellationToken)
         {
             await this.hub.Clients.Client(connectionId)
-                .SendAsync("invoke", command, pin, cancellationToken);
+                .SendAsync(SignalRConfig.InvokeCommandMethodName, command, pin, cancellationToken);
         }
 
         public void AddClient(string connectionId, string machineName)
