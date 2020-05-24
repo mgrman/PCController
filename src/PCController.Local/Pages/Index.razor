@@ -1,130 +1,61 @@
 ﻿@page "/"
-@inherits PCControllerComponentBase
+@using System.Threading
+@inherits PcControllerComponentBase
 
-@inject IPinHandler _pinAuthenticationStateProvider
-@inject IControllerService _controller
-@inject IRemoteServersProvider _remoteServersProvider
-@inject ISignalRManager _statusHub
+@inject IPinHandler PinAuthenticationStateProvider
+@inject IEnumerable<IRemoteServersProvider> RemoteServersProviders
 
 <h1>Hello!</h1>
 
 <div class="form-group">
     <label for="pin">PIN</label>
-    <input type="password" class="form-control" id="pin" placeholder="PIN" @bind-value="_pinAuthenticationStateProvider.PIN">
+    <input type="password" class="form-control" id="pin" placeholder="PIN" @bind-value="PinAuthenticationStateProvider.Pin">
 </div>
 <AuthorizeView>
-    <div class="card-group">
-        @if (_controller.IsPlatformSupported)
-        {
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">LOCAL</h5>
-                    <p class="card-text">Lorem ipsum.</p>
 
-                    @foreach (var command in Enum.GetValues(typeof(Command))
-.Cast<Command>())
-                    {
-                        <button type="button" class="btn btn-info" @onclick="async () => await _controller.InvokeCommandAsync(_pinAuthenticationStateProvider.PIN,command, System.Threading.CancellationToken.None)">@command</button>
-                    }
-                </div>
-            </div>
-        }
+    @foreach (var provider in RemoteServersProviders)
+    {
+        <div class="card-group">
+            @provider.GetType().Name
 
-        @foreach (var remoteServer in _remoteServersProvider.RemoteServers)
-        {
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">@remoteServer.Name </h5>
-                    <p class="card-text">@remoteServer.Uri </p>
-                    <p class="card-text">@(onlineStatuses.TryGetValue(remoteServer, out var res) ? res : OnlineStatus.Unknown)</p>
-                    <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res3) ? res3 : OnlineStatus.Unknown) != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await remoteServer.TryToWakeUpAsync(System.Threading.CancellationToken.None)">WakeUp</button>
-                    @foreach (var command in Enum.GetValues(typeof(Command))
-.Cast<Command>())
-                    {
-                        <button type="button" disabled="@((onlineStatuses.TryGetValue(remoteServer, out var res2) ? res2 : OnlineStatus.Unknown) != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async () => await remoteServer.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
-                    }
-                </div>
-            </div>
-        }
+            @foreach (var remoteServer in Bind(provider.RemoteServers))
+            {
+                var onlineStatus = Bind(remoteServer.IsOnline);
 
-        @foreach (var extraId in connections ?? Enumerable.Empty<SignalRConnectionServer>())
-        {
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">@extraId.MachineName</h5>
-                    <p class="card-text">???</p>
-                    <p class="card-text">@(OnlineStatus.ServerOnline)</p>
-                    <p class="card-text">
-                        Machine is connected back to this one
-                    </p>
-                    
-                    <input type="password" @bind-value="extraId.PIN"/>
-                    
-                    <button type="button" disabled="@true" class="btn btn-info">WakeUp</button>
-                    @foreach (var command in Enum.GetValues(typeof(Command))
-.Cast<Command>())
-                    {
-                        <button type="button" class="btn btn-info"  @onclick="async () => await extraId.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
-                    }
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@remoteServer.MachineName </h5>
+                        @foreach (var info in remoteServer.AdditionalInfo)
+                        {
+                            <p class="card-text">@info.key : @info.value </p>
+                        }
+                        <p class="card-text">@onlineStatus</p>
+                        @* <button type="button" disabled="@(onlineStatus != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await remoteServer.TryToWakeUpAsync(CancellationToken.None)">WakeUp</button> *@
+                        @foreach (var command in Enum.GetValues(typeof(Command))
+                            .Cast<Command>())
+                        {
+                            <button type="button" disabled="@(onlineStatus != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async () => await remoteServer.InvokeCommandAsync(command, CancellationToken.None)">@command</button>
+                        }
+                    </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
+
 </AuthorizeView>
 
 @functions {
-
-    private readonly Dictionary<RemoteServer, OnlineStatus> onlineStatuses = new Dictionary<RemoteServer, OnlineStatus>();
-
-    private IEnumerable<SignalRConnectionServer> connections { get; set; }
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
-        await _pinAuthenticationStateProvider.InitializeJSAsync();
-        StateHasChanged();
-
-        foreach (var remoteServer in _remoteServersProvider.RemoteServers)
-        {
-            remoteServer.IsOnline
-                .SubscribeAsync(async (o, c) =>
-                {
-                    await InvokeAsync(() =>
-                    {
-                        if (c.IsCancellationRequested)
-                        {
-                            return;
-                        }
-                        onlineStatuses[remoteServer] = o;
-                        StateHasChanged();
-                    });
-                })
-                .TrackSubscription(this);
-        }
-        _statusHub.Connections
-            .SubscribeAsync(async (o, c) =>
-            {
-                await InvokeAsync(() =>
-                {
-                    if (c.IsCancellationRequested)
-                    {
-                        return;
-                    }
-                    connections = o;
-                    StateHasChanged();
-                });
-            })
-            .TrackSubscription(this);
-    }
-
-    private void ConcurentStateHasChanged()
-    {
-        InvokeAsync(StateHasChanged);
+        await PinAuthenticationStateProvider.InitializeJsAsync();
     }
 
     public override void Dispose()
     {
         base.Dispose();
     }
+
 }

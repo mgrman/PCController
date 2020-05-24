@@ -17,12 +17,13 @@
 
 @code {
 
-    private bool collapseNavMenu { get; set; }=true;
+    private bool CollapseNavMenu { get; set; } = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => CollapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
-        collapseNavMenu = !collapseNavMenu;
+        CollapseNavMenu = !CollapseNavMenu;
     }
+
 }

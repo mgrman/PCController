@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,7 +10,7 @@ namespace PCController.Local.WinApp
     internal static class Program
     {
         /// <summary>
-        ///  The main entry point for the application.
+        ///     The main entry point for the application.
         /// </summary>
         [STAThread]
         private static void Main(string[] args)
@@ -25,17 +22,18 @@ namespace PCController.Local.WinApp
             var menu = new ContextMenuStrip();
             menu.Items.Add(new ToolStripButton("Exit", null, CleanExit));
 
-            var icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            var icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly()
+                .Location);
 
-            var _notifyIcon = new NotifyIcon();
-            _notifyIcon.Icon = icon;
-            _notifyIcon.Visible = true;
-            _notifyIcon.BalloonTipText = "Running";
-            _notifyIcon.BalloonTipTitle = "PCController";
-            _notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
-            _notifyIcon.ContextMenuStrip = menu;
-            _notifyIcon.DoubleClick += OpenInBrowser;
-            _notifyIcon.ShowBalloonTip(2000);
+            var notifyIcon = new NotifyIcon();
+            notifyIcon.Icon = icon;
+            notifyIcon.Visible = true;
+            notifyIcon.BalloonTipText = "Running";
+            notifyIcon.BalloonTipTitle = "PCController";
+            notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon.ContextMenuStrip = menu;
+            notifyIcon.DoubleClick += OpenInBrowser;
+            notifyIcon.ShowBalloonTip(2000);
 
             Task.Run(() =>
             {
@@ -43,7 +41,7 @@ namespace PCController.Local.WinApp
                 {
                     try
                     {
-                        PCController.Local.Program.Main(args);
+                        Local.Program.Main(args);
                     }
                     catch (Exception ex)
                     {

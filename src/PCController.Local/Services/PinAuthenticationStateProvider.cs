@@ -1,85 +1,80 @@
-﻿using Blazored.LocalStorage;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace PCController.Local.Services
 {
     public class PinAuthenticationStateProvider : AuthenticationStateProvider, IPinHandler
     {
-        private readonly string _expectedPIN;
-        private readonly ILocalStorageService _localStorage;
-        private string _pin;
+        private readonly string expectedPin;
+        private readonly ILocalStorageService localStorage;
 
-        private Task<AuthenticationState> _cachedState;
-        private bool _initialized;
+        private Task<AuthenticationState> cachedState;
+        private bool initialized;
+        private string pin;
 
         public PinAuthenticationStateProvider(IOptionsSnapshot<Config> config, ILocalStorageService localStorage)
         {
-            _expectedPIN = config.Value.PIN;
+            this.expectedPin = config.Value.Pin;
 
-            _cachedState = Task.FromResult(GetState());
-            _localStorage = localStorage;
+            this.cachedState = Task.FromResult(this.GetState());
+            this.localStorage = localStorage;
         }
 
-        public string PIN
+        public string Pin
         {
-            get => _pin;
+            get => this.pin;
             set
             {
-                if (_pin == value)
+                if (this.pin == value)
                 {
                     return;
                 }
-                _pin = value;
-                UpdateStoredPin(value);
 
-                _cachedState = Task.FromResult(GetState());
-                this.NotifyAuthenticationStateChanged(_cachedState);
+                this.pin = value;
+                this.UpdateStoredPin(value);
+
+                this.cachedState = Task.FromResult(this.GetState());
+                this.NotifyAuthenticationStateChanged(this.cachedState);
             }
         }
 
-        public async Task InitializeJSAsync()
+        public async Task InitializeJsAsync()
         {
-            if (_initialized)
+            if (this.initialized)
             {
                 return;
             }
-            _initialized = true;
-            PIN = await _localStorage.GetItemAsync<string>("pin");
+
+            this.initialized = true;
+            this.Pin = await this.localStorage.GetItemAsync<string>("pin");
         }
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
-        {
-            return _cachedState;
-        }
+        public override Task<AuthenticationState> GetAuthenticationStateAsync() => this.cachedState;
 
         private async void UpdateStoredPin(string pin)
         {
-            await _localStorage.SetItemAsync("pin", pin);
+            await this.localStorage.SetItemAsync("pin", pin);
         }
 
         private AuthenticationState GetState()
         {
-            if (_pin == _expectedPIN)
+            if (this.pin == this.expectedPin)
             {
                 var identity = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, "admin"),
-                }, "pin");
+                    {
+                        new Claim(ClaimTypes.Name, "admin")
+                    },
+                    "pin");
 
                 var user = new ClaimsPrincipal(identity);
 
                 return new AuthenticationState(user);
             }
-            else
-            {
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-            }
+
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
     }
 }
