@@ -9,6 +9,10 @@ namespace PCController.Local.Shared
     public static class ObservableSectionExtensions
     {
         public static T Bind<T>(this IObservable<T> observable, ObservableSection section) => section.Bind(observable);
+
+        public static Action<ChangeEventArgs> Set(this IObserver<string> observer, ObservableSection section) => section.Set(observer);
+
+        public static Action<ChangeEventArgs> Set<T>(this IObserver<T> observer, Func<string, T> converter, ObservableSection section) => section.Set(observer, converter);
     }
 
     public class ObservableSection : ComponentBase, IDisposable
@@ -70,6 +74,16 @@ namespace PCController.Local.Shared
             }
 
             return default;
+        }
+
+        public Action<ChangeEventArgs> Set(IObserver<string> observer)
+        {
+            return e => observer.OnNext(e.Value.ToString());
+        }
+
+        public Action<ChangeEventArgs> Set<T>(IObserver<T> observer, Func<string, T> converter)
+        {
+            return e => observer.OnNext(converter(e.Value.ToString()));
         }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)

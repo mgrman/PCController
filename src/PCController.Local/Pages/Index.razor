@@ -38,10 +38,7 @@
                             {
                                 <p class="card-text">
                                     PIN :
-                                    <input type="password" 
-                                           value="@pinProtectedServer.Pin.Bind(ObservableContext)" 
-                                           @onchange="e => pinProtectedServer.Pin.OnNext(e.Value.ToString())"
-                                           />
+                                    <input type="password" value="@pinProtectedServer.Pin.Bind(ObservableContext)" @onchange="@pinProtectedServer.Pin.Set(ObservableContext)"/>
                                 </p>
                             }
 
