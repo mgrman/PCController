@@ -48,11 +48,11 @@ namespace PCController.Local
 
         public string SignalRConnectionId { get; }
 
+        public ISubject<string> Pin => this.pin;
+
         public string MachineName { get; set; }
 
         public IEnumerable<(string key, string value)> AdditionalInfo { get; }
-
-        public ISubject<string> Pin => this.pin;
 
         public IObservable<OnlineStatus> IsOnline => this.isOnline;
 

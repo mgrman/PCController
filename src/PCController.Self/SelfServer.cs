@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -25,7 +24,6 @@ namespace PCController.Local
         public string MachineName => "LOCAL";
 
         public IEnumerable<(string key, string value)> AdditionalInfo { get; } = Array.Empty<(string key, string value)>();
-
 
         public IObservable<OnlineStatus> IsOnline { get; }
 

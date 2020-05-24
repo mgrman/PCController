@@ -32,25 +32,25 @@
                                 <p class="card-text">@info.key : @info.value </p>
                             }
                             <p class="card-text">@onlineStatus</p>
-                            
-                            
+
+
                             @if (remoteServer is IPinProtectedServer pinProtectedServer)
                             {
-                                <p class="card-text">PIN :
-                                    <input type="password"
-                                           value="@pinProtectedServer.Pin.Bind(ObservableContext)"
-                                           @onchange="@((ChangeEventArgs __e) => pinProtectedServer.Pin.OnNext(__e.Value.ToString()))"/> </p>
+                                <p class="card-text">
+                                    PIN :
+                                    <input type="password" value="@pinProtectedServer.Pin.Bind(ObservableContext)" @onchange="@((ChangeEventArgs __e) => pinProtectedServer.Pin.OnNext(__e.Value.ToString()))"/>
+                                </p>
                             }
-                            
+
                             @if (remoteServer is INetworkAccessibleServer accessibleServer)
                             {
-                                <button type="button" disabled="@(onlineStatus != OnlineStatus.Offline)" class="btn btn-info" @onclick="async()=>await InvokeWithErrorHandling(async () => await accessibleServer.WakeUpAsync(CancellationToken.None))">WakeUp</button>
+                                <button type="button" disabled="@(onlineStatus != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await InvokeWithErrorHandling(async () => await accessibleServer.WakeUpAsync(CancellationToken.None))">WakeUp</button>
                             }
-                            
+
                             @foreach (var command in Enum.GetValues(typeof(Command))
                                 .Cast<Command>())
                             {
-                                <button type="button" disabled="@(onlineStatus != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async()=>await InvokeWithErrorHandling(async () => await remoteServer.InvokeCommandAsync(command, CancellationToken.None))">@command</button>
+                                <button type="button" disabled="@(onlineStatus != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async () => await InvokeWithErrorHandling(async () => await remoteServer.InvokeCommandAsync(command, CancellationToken.None))">@command</button>
                             }
                         </div>
                     </div>

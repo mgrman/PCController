@@ -53,8 +53,6 @@ namespace PCController.Local
 
         public IEnumerable<(string key, string value)> AdditionalInfo { get; }
 
-        public ISubject<string> Pin => this.pin;
-
         public IObservable<OnlineStatus> IsOnline => this.isOnline;
 
         public async Task WakeUpAsync(CancellationToken cancellationToken)
@@ -68,6 +66,8 @@ namespace PCController.Local
         }
 
         public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken) => this.hub.InvokeCommandAsync(command, this.pin.Value, cancellationToken);
+
+        public ISubject<string> Pin => this.pin;
 
         private async Task<Unit> IsOnlineChanged(bool o, CancellationToken cancellationToken)
         {

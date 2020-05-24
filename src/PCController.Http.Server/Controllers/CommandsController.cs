@@ -31,10 +31,7 @@ namespace PCController.Http.Server.Controllers
         [HttpGet]
         [Route("/test")]
         // GET
-        public IActionResult Index()
-        {
-            return this.Ok("Hello");
-        }
+        public IActionResult Index() => this.Ok("Hello");
 
         [Route(CommandRoute)]
         [HttpPost]
