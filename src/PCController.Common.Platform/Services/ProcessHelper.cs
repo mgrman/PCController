@@ -20,8 +20,8 @@ namespace PCController.Local.Services
             {
                 FileName = path,
                 Arguments = args,
-                RedirectStandardOutput = true,
-                UseShellExecute = false
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
             var process = Process.Start(startInfo);
             await process.WaitForExitAsync(cancellationToken);
@@ -35,7 +35,8 @@ namespace PCController.Local.Services
                 FileName = path,
                 Arguments = args,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
             var process = Process.Start(startInfo);
             await process.WaitForExitAsync(cancellationToken);
