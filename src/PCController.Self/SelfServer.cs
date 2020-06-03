@@ -23,7 +23,7 @@ namespace PCController.Local
 
         public string MachineName => "LOCAL";
 
-        public IEnumerable<(string key, string value)> AdditionalInfo { get; } = Array.Empty<(string key, string value)>();
+        public IReadOnlyDictionary<string, string> AdditionalInfo { get; } = new Dictionary<string, string>();
 
         public IObservable<OnlineStatus> IsOnline { get; }
 

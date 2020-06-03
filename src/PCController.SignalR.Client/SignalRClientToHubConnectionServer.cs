@@ -16,7 +16,6 @@ namespace PCController.Local
         private readonly AutoRetryHub hub;
         private readonly BehaviourSubjectWithTracking<OnlineStatus> isOnline;
         private readonly INativeExtensions nativeExtensions;
-        private readonly BehaviorSubject<string> pin = new BehaviorSubject<string>("");
 
         public SignalRClientToHubConnectionServer(RemoteServerConfig serverConfig, string localMachineId, IControllerService controllerService, INativeExtensions nativeExtensions)
         {
@@ -25,7 +24,7 @@ namespace PCController.Local
             this.Uri = serverConfig.Uri;
             this.MacAddress = PhysicalAddress.TryParse(serverConfig.MacAddress, out var parsedMac) ? parsedMac : null;
 
-            this.pin.OnNext(serverConfig.Pin);
+            this.InitialPin = serverConfig.Pin;
             this.Ip = IPAddress.TryParse(this.Uri.Host, out var parsedIp) ? parsedIp : null;
 
             this.hub = new AutoRetryHub(this.Uri, localMachineId, controllerService);
@@ -36,10 +35,10 @@ namespace PCController.Local
             var cts = new CancellationTokenSource();
             this.hub.IsServerOnline.SubscribeAsync(this.IsOnlineChanged);
 
-            this.AdditionalInfo = new (string key, string value)[]
+            this.AdditionalInfo = new Dictionary<string, string>
             {
-                (nameof(this.Uri), this.Uri.ToString()),
-                (nameof(this.MacAddress), this.MacAddress.ToString())
+                { nameof(this.Uri), this.Uri.ToString() },
+                {nameof(this.MacAddress), this.MacAddress.ToString() }
             };
         }
 
@@ -51,9 +50,11 @@ namespace PCController.Local
 
         public string MachineName { get; }
 
-        public IEnumerable<(string key, string value)> AdditionalInfo { get; }
+        public IReadOnlyDictionary<string, string> AdditionalInfo { get; }
 
         public IObservable<OnlineStatus> IsOnline => this.isOnline;
+
+        public string InitialPin { get; }
 
         public async Task WakeUpAsync(CancellationToken cancellationToken)
         {
@@ -65,9 +66,15 @@ namespace PCController.Local
             await this.nativeExtensions.SendWolAsync(this.Ip, cancellationToken);
         }
 
-        public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken) => this.hub.InvokeCommandAsync(command, this.pin.Value, cancellationToken);
+        public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
 
-        public ISubject<string> Pin => this.pin;
+        public async Task InvokeCommandAsync(Command command, string pin, CancellationToken cancellationToken)
+        {
+            await this.hub.InvokeCommandAsync(command, pin, cancellationToken);
+        }
 
         private async Task<Unit> IsOnlineChanged(bool o, CancellationToken cancellationToken)
         {

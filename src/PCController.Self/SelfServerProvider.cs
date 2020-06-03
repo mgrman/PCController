@@ -17,5 +17,7 @@ namespace PCController.Local.Services
         }
 
         public IObservable<IReadOnlyList<IRemoteServer>> RemoteServers { get; }
+
+        public string ProviderName => "Self";
     }
 }

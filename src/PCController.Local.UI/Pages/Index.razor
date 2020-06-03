@@ -1,0 +1,90 @@
+﻿@page "/"
+@using System.Threading
+@inherits PcControllerComponentBase
+
+@inject IRemoteServersProvidersManager RemoteServersProviders
+@inject IModalService Modal
+
+<h1>Hello!</h1>
+
+@*<AuthorizeView Context="AuthenticationState">
+    <Authorized>*@
+<ObservableSection Context="ObservableContext">
+    @foreach (var provider in RemoteServersProviders.Providers.Bind(ObservableContext) ?? Enumerable.Empty<IRemoteServersProvider>())
+    {
+        <div class="card-group">
+            @provider.ProviderName
+
+            @foreach (var remoteServer in provider.RemoteServers.Bind(ObservableContext) ?? Enumerable.Empty<IRemoteServer>())
+            {
+                var onlineStatus = remoteServer.IsOnline.Bind(ObservableContext);
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@remoteServer.MachineName </h5>
+                        @foreach (var info in remoteServer.AdditionalInfo)
+                        {
+                            <p class="card-text">@info.Key : @info.Value </p>
+                        }
+                        <p class="card-text">@onlineStatus</p>
+
+                        @if (remoteServer is IPinProtectedServer pinProtectedServer)
+                        {
+                            <p class="card-text">
+                                PIN :
+                                <input type="password" value="@pinProtectedServer.Pin.Bind(ObservableContext)" @onchange="@pinProtectedServer.Pin.Set(ObservableContext)" />
+                            </p>
+                        }
+
+                        @if (remoteServer is INetworkAccessibleServer accessibleServer)
+                        {
+                            <button type="button" disabled="@(onlineStatus != OnlineStatus.Offline)" class="btn btn-info" @onclick="async () => await InvokeWithErrorHandling(async () => await accessibleServer.WakeUpAsync(CancellationToken.None))">WakeUp</button>
+                        }
+
+                        @foreach (var command in Enum.GetValues(typeof(Command))
+             .Cast<Command>())
+                        {
+                            <button type="button" disabled="@(onlineStatus != OnlineStatus.ServerOnline)" class="btn btn-info" @onclick="async () => await InvokeWithErrorHandling(async () => await remoteServer.InvokeCommandAsync(command, CancellationToken.None))">@command</button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</ObservableSection>
+@*</Authorized>
+        <NotAuthorized>
+            Login first!
+        </NotAuthorized>
+    </AuthorizeView>*@
+
+@functions {
+
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        StateHasChanged();
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+    }
+
+    protected async Task InvokeWithErrorHandling(Func<Task> func)
+    {
+        try
+        {
+            await func();
+        }
+        catch (Exception ex)
+        {
+            var parameters = new ModalParameters();
+            parameters.Add("Message", ex.Message);
+
+            Modal.Show<ErrorDialog>("Error", parameters);
+        }
+    }
+
+}

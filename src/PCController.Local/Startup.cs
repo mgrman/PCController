@@ -1,13 +1,15 @@
 using System;
-using Blazored.LocalStorage;
-using Blazored.Modal;
+using Microsoft.AspNetCore.Authentication;
+using BlazorApp1.Server.Data;
+using BlazorApp1.Server.Models;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+
 using PCController.Common;
 using PCController.Local.Services;
 
@@ -26,17 +28,6 @@ namespace PCController.Local
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
-            services.AddServerSideBlazor();
-            services.AddBlazoredLocalStorage();
-            services.AddBlazoredModal();
-
-            services.AddScoped<PinAuthenticationStateProvider>();
-            services.AddScoped<AuthenticationStateProvider, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
-            services.AddScoped<IPinHandler, PinAuthenticationStateProvider>(c => c.GetRequiredService<PinAuthenticationStateProvider>());
-
-            services.AddHttpClient();
-
             services.Configure<Config>(this.Configuration.GetSection("PCController"));
             services.AddPlatformServices();
 
@@ -44,11 +35,37 @@ namespace PCController.Local
             services.AddSignalRServer();
             services.AddSignalRClient();
             services.AddControlViaHttp();
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite(("Data Source=Identity.db")));
+
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddIdentityServer()
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+
+            services.AddAuthentication()
+                .AddIdentityServerJwt();
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+            services.AddGrpc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            using (var serviceScope = app.ApplicationServices
+               .GetRequiredService<IServiceScopeFactory>()
+               .CreateScope())
+            {
+                using (var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>())
+                {
+                    context.Database.Migrate();
+                }
+            }
+
             var config = app.ApplicationServices.GetService<IOptions<Config>>();
             if (string.IsNullOrEmpty(config.Value.Name))
             {
@@ -58,6 +75,8 @@ namespace PCController.Local
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
+                app.UseWebAssemblyDebugging();
             }
             else
             {
@@ -67,16 +86,26 @@ namespace PCController.Local
             }
 
             app.UseHttpsRedirection();
+            app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseIdentityServer();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseGrpcWeb();
+
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<RemoteServersProvidersService>()
+                    .EnableGrpcWeb();
+
                 endpoints.MapSignalRServer();
                 endpoints.MapControlViaHttp();
-                endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapRazorPages();
+                endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
             });
         }
     }

@@ -16,21 +16,20 @@ namespace PCController.Local
         private readonly HttpClient httpClient;
         private readonly BehaviourSubjectWithTracking<OnlineStatus> isOnline = new BehaviourSubjectWithTracking<OnlineStatus>(OnlineStatus.Unknown);
         private readonly INativeExtensions nativeExtensions;
-        private readonly BehaviorSubject<string> pin = new BehaviorSubject<string>("");
 
         public HttpServer(RemoteServerConfig serverConfig, HttpClient httpClient, INativeExtensions nativeExtensions)
         {
             this.httpClient = httpClient;
-            this.nativeExtensions = nativeExtensions;
             this.MachineName = serverConfig.Name;
             this.Uri = serverConfig.Uri;
             this.MacAddress = serverConfig.MacAddress;
+            this.nativeExtensions = nativeExtensions;
 
-            this.pin.OnNext(serverConfig.Pin);
+            this.InitialPin = serverConfig.Pin;
             this.Ip = IPAddress.TryParse(this.Uri.Host, out var temp) ? temp : null;
-            this.AdditionalInfo = new[]
+            this.AdditionalInfo = new Dictionary<string, string>
             {
-                (nameof(this.Uri), this.Uri.ToString())
+                { nameof(this.Uri), this.Uri.ToString() }
             };
 
             this.isOnline.OnSubscibersChanged.SubscribeAsync(async (enabled, cancellationToken) =>
@@ -100,9 +99,11 @@ namespace PCController.Local
 
         public string MachineName { get; }
 
-        public IEnumerable<(string key, string value)> AdditionalInfo { get; }
+        public IReadOnlyDictionary<string, string> AdditionalInfo { get; }
 
         public IObservable<OnlineStatus> IsOnline => this.isOnline;
+
+        public string InitialPin { get; }
 
         public async Task WakeUpAsync(CancellationToken cancellationToken)
         {
@@ -116,8 +117,13 @@ namespace PCController.Local
 
         public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
         {
+            throw new NotSupportedException();
+        }
+
+        public async Task InvokeCommandAsync(Command command, string pin, CancellationToken cancellationToken)
+        {
             var content = new StringContent(string.Empty);
-            content.Headers.Add(CommandsController.PinHeader, this.pin.Value);
+            content.Headers.Add(CommandsController.PinHeader, pin);
 
             var routeUri = new Uri(CommandsController.CommandRoute.Replace(CommandsController.CommandPlaceholder, command.ToString()), UriKind.Relative);
             var res = new Uri(this.Uri, routeUri);
@@ -128,7 +134,5 @@ namespace PCController.Local
                 throw new InvalidOperationException(response.StatusCode.ToString());
             }
         }
-
-        public ISubject<string> Pin => this.pin;
     }
 }

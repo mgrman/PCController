@@ -10,6 +10,7 @@ namespace PCController.Common
     {
         public static void AddControlViaHttp(this IServiceCollection services)
         {
+            services.AddHttpClient();
             services.AddSingleton<IRemoteServersProvider, HttpServersProvider>();
             services.AddMvc()
                 .AddApplicationPart(typeof(CommandsController).Assembly)

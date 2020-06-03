@@ -11,7 +11,6 @@ namespace PCController.Local
     internal class SignalRHubToClientConnectionServer : IRemoteServer, IPinProtectedServer
     {
         private readonly BehaviorSubject<OnlineStatus> isOnline;
-        private readonly BehaviorSubject<string> pin = new BehaviorSubject<string>("");
         private readonly ISignalRManager statusHub;
         private readonly IDisposableTracker tracker = new DisposableTracker();
 
@@ -40,22 +39,30 @@ namespace PCController.Local
                 })
                 .TrackSubscription(this.tracker);
 
-            this.AdditionalInfo = new[]
+            this.AdditionalInfo = new Dictionary<string, string>
             {
-                (nameof(this.SignalRConnectionId), this.SignalRConnectionId)
+                { nameof(this.SignalRConnectionId), this.SignalRConnectionId }
             };
         }
 
         public string SignalRConnectionId { get; }
 
-        public ISubject<string> Pin => this.pin;
-
         public string MachineName { get; set; }
 
-        public IEnumerable<(string key, string value)> AdditionalInfo { get; }
+        public IReadOnlyDictionary<string, string> AdditionalInfo { get; }
 
         public IObservable<OnlineStatus> IsOnline => this.isOnline;
 
-        public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken) => this.statusHub.InvokeCommandAsync(this.SignalRConnectionId, command, this.pin.Value, cancellationToken);
+        public string InitialPin => string.Empty;
+
+        public async Task InvokeCommandAsync(Command command, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public async Task InvokeCommandAsync(Command command, string pin, CancellationToken cancellationToken)
+        {
+            await this.statusHub.InvokeCommandAsync(this.SignalRConnectionId, command, pin, cancellationToken);
+        }
     }
 }

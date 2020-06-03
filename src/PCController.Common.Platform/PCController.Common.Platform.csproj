@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PCController.Common\PCController.Common.csproj" />
+        <ProjectReference Include="..\PCController.Common.Server\PCController.Common.Server.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

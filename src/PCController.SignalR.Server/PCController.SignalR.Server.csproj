@@ -9,12 +9,13 @@
 
 
     <ItemGroup>
-      <ProjectReference Include="..\PCController.Common\PCController.Common.csproj" />
+        <ProjectReference Include="..\PCController.Common\PCController.Common.csproj"/>
+        <ProjectReference Include="..\PCController.Common.Server\PCController.Common.Server.csproj"/>
       <ProjectReference Include="..\PCController.SignalR.Common\PCController.SignalR.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.3" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.0-preview.4.20257.10" />
         <PackageReference Include="System.Reactive" Version="4.4.1" />
     </ItemGroup>
 </Project>

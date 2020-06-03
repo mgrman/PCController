@@ -26,13 +26,11 @@ namespace PCController.Local.Services
             this.hub = hub;
         }
 
-        IObservable<IReadOnlyList<IRemoteServer>> IRemoteServersProvider.RemoteServers => this.connections;
-
         public IObservable<IEnumerable<SignalRHubToClientConnectionServer>> Connections => this.connections;
-
         public IObservable<SignalRHubToClientConnectionServer> NewConnectedDevices => this.newConnectedDevices;
-
         public IObservable<SignalRHubToClientConnectionServer> NewDisconnectedDevices => this.newDisconnectedDevices;
+        public string ProviderName => "SignalR Hub to Client Connection - Servers";
+        IObservable<IReadOnlyList<IRemoteServer>> IRemoteServersProvider.RemoteServers => this.connections;
 
         public async Task InvokeCommandAsync(string connectionId, Command command, string pin, CancellationToken cancellationToken)
         {

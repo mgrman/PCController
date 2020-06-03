@@ -12,19 +12,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\PCController.appConfig = ..\PCController.appConfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.Common", "PCController.Common\PCController.Common.csproj", "{1DA845D2-E9D1-48C9-AB92-4B5DAE52991A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Common", "PCController.Common\PCController.Common.csproj", "{1DA845D2-E9D1-48C9-AB92-4B5DAE52991A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.SignalR.Server", "PCController.SignalR.Server\PCController.SignalR.Server.csproj", "{488486C5-10B4-4444-AE86-B5625FF52306}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.SignalR.Server", "PCController.SignalR.Server\PCController.SignalR.Server.csproj", "{488486C5-10B4-4444-AE86-B5625FF52306}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.SignalR.Client", "PCController.SignalR.Client\PCController.SignalR.Client.csproj", "{17D90E33-AAC8-4373-A14B-7E38164D4368}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.SignalR.Client", "PCController.SignalR.Client\PCController.SignalR.Client.csproj", "{17D90E33-AAC8-4373-A14B-7E38164D4368}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.Http.Server", "PCController.Http.Server\PCController.Http.Server.csproj", "{91EB815C-F07A-4C09-9AF9-E71DAD67CDE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Http.Server", "PCController.Http.Server\PCController.Http.Server.csproj", "{91EB815C-F07A-4C09-9AF9-E71DAD67CDE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.SignalR.Common", "PCController.SignalR.Common\PCController.SignalR.Common.csproj", "{761821DC-C65F-4097-A7A8-D5BAEC6A58D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.SignalR.Common", "PCController.SignalR.Common\PCController.SignalR.Common.csproj", "{761821DC-C65F-4097-A7A8-D5BAEC6A58D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.Common.Platform", "PCController.Common.Platform\PCController.Common.Platform.csproj", "{81394124-2630-4564-9580-42E92B85B056}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Common.Platform", "PCController.Common.Platform\PCController.Common.Platform.csproj", "{81394124-2630-4564-9580-42E92B85B056}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.Self", "PCController.Self\PCController.Self.csproj", "{CE44A9C9-055A-4E21-AEA4-97E2BDC92AE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Self", "PCController.Self\PCController.Self.csproj", "{CE44A9C9-055A-4E21-AEA4-97E2BDC92AE9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Local.UI", "PCController.Local.UI\PCController.Local.UI.csproj", "{6598F889-C4A6-4A5C-A186-F4025B8E7FEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.Common.Server", "PCController.Common.Server\PCController.Common.Server.csproj", "{524E8223-E02C-4FC2-AF0F-C22C1BBB2A14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,13 +72,19 @@ Global
 		{CE44A9C9-055A-4E21-AEA4-97E2BDC92AE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE44A9C9-055A-4E21-AEA4-97E2BDC92AE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE44A9C9-055A-4E21-AEA4-97E2BDC92AE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6598F889-C4A6-4A5C-A186-F4025B8E7FEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6598F889-C4A6-4A5C-A186-F4025B8E7FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6598F889-C4A6-4A5C-A186-F4025B8E7FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6598F889-C4A6-4A5C-A186-F4025B8E7FEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{524E8223-E02C-4FC2-AF0F-C22C1BBB2A14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{524E8223-E02C-4FC2-AF0F-C22C1BBB2A14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{524E8223-E02C-4FC2-AF0F-C22C1BBB2A14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{524E8223-E02C-4FC2-AF0F-C22C1BBB2A14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B14D4A61-1717-470C-B5BC-C5C01839FD9E}
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal
