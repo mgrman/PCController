@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Server", "Serv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PCController.Shared", "Shared\PCController.Shared.csproj", "{223B032F-A47F-4790-81A6-B7ED63910674}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.PWA.Server", "PCController.PWA\Server\PCController.PWA.Server.csproj", "{0404AEDE-B98C-4596-B330-139BD49E9D78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.PWA.Server", "PWA\Server\PCController.PWA.Server.csproj", "{0404AEDE-B98C-4596-B330-139BD49E9D78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.PWA.Client", "PCController.PWA\Client\PCController.PWA.Client.csproj", "{C50B6D4F-9533-4073-8466-E082AEFA9DA8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCController.PWA.Client", "PWA\Client\PCController.PWA.Client.csproj", "{C50B6D4F-9533-4073-8466-E082AEFA9DA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
