@@ -14,6 +14,8 @@ namespace PCController.PWA.Client
     {
         private readonly HttpClient httpClient;
         private readonly ISyncLocalStorageService localStorageService;
+        private string baseAddress;
+        private string pin;
 
         public HttpClientManager(HttpClient httpClient, ISyncLocalStorageService localStorageService)
         {
@@ -24,24 +26,38 @@ namespace PCController.PWA.Client
             PIN = localStorageService.ContainKey(nameof(PIN)) ? localStorageService.GetItemAsString(nameof(PIN)) : "";
         }
 
-        public string BaseAddress { get; set; }
-
-        public string PIN { get; set; }
-
-        public async Task<TValue> GetFromJsonAsync<TValue>( string? requestUri, CancellationToken cancellationToken = default(CancellationToken))
+        public string BaseAddress
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, BaseAddress+requestUri);
+            get => baseAddress; set
+            {
+                baseAddress = value;
+                localStorageService.SetItem(nameof(BaseAddress), value);
+            }
+        }
+
+        public string PIN
+        {
+            get => pin; set
+            {
+                pin = value;
+                localStorageService.SetItem(nameof(PIN), value);
+            }
+        }
+
+        public async Task<TValue> GetFromJsonAsync<TValue>(string? requestUri, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, BaseAddress + requestUri);
             request.Headers.Add(Routes.PinHeader, PIN);
 
             Task<HttpResponseMessage> taskResponse = httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             using (HttpResponseMessage response = await taskResponse.ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
-                return await response.Content!.ReadFromJsonAsync<TValue>( null, cancellationToken).ConfigureAwait(false);
+                return await response.Content!.ReadFromJsonAsync<TValue>(null, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        public  Task<HttpResponseMessage> PostAsJsonAsync(string? requestUri,CancellationToken cancellationToken = default(CancellationToken))
+        public Task<HttpResponseMessage> PostAsJsonAsync(string? requestUri, CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = new HttpRequestMessage(HttpMethod.Post, BaseAddress + requestUri);
             request.Headers.Add(Routes.PinHeader, PIN);
