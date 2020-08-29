@@ -22,4 +22,3 @@ jobs:
         api_key: fa5b5e05-ef21-49c5-8aed-4a7bc0775fa6
         # Your Heroku App Name
         app_name: pc-controller
-        dockerfile_path: 'Dockerfile-pwa' 
