@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PCController.Client
+namespace PCController.PWA.Client
 {
     public class HttpClientManager
     {

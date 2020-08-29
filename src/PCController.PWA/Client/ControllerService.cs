@@ -1,6 +1,5 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
-using PCController.Client;
 using PCController.Shared;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PCController.Services
+namespace PCController.PWA.Client
 {
     public class ControllerService : IControllerService
     {

@@ -1,18 +1,11 @@
 using System;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Components.Authorization;
-using PCController.Services;
 using Blazored.LocalStorage;
 
-namespace PCController.Client
+namespace PCController.PWA.Client
 {
     public class Program
     {
@@ -30,6 +23,7 @@ namespace PCController.Client
             builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("PCController.ServerAPI"));
 
             builder.Services.AddScoped<IControllerService, ControllerService>();
+            builder.Services.AddScoped<HttpClientManager>();
 
             builder.Services.AddBlazoredLocalStorage();
 

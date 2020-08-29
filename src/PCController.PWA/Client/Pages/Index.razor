@@ -1,5 +1,5 @@
 ﻿@page "/"
-@inject PCController.Services.IControllerService service
+@inject IControllerService service
 @inject NavigationManager navigationManager
 @inject HttpClientManager httpClient
 <h1>PCController</h1>
@@ -21,8 +21,8 @@
 
         <button type="button" class="btn btn-info" @onclick="async () => await service.WakeOnLan()">Wake up</button>
 
-        @foreach (var command in Enum.GetValues(typeof(PCController.Shared.Command))
-.Cast<PCController.Shared.Command>())
+        @foreach (var command in Enum.GetValues(typeof(Command))
+.Cast<Command>())
         {
             <button type="button" class="btn btn-info" @onclick="async () => await service.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
         }

@@ -1,9 +1,8 @@
 ﻿using PCController.Shared;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PCController.Services
+namespace PCController.PWA.Client
 {
     public interface IControllerService
     {
