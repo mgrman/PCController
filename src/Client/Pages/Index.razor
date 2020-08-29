@@ -1,0 +1,30 @@
+﻿@page "/"
+@inject PCController.Services.IControllerService service
+@inject NavigationManager navigationManager
+@inject HttpClientManager httpClient
+<h1>PCController</h1>
+
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title"> @(httpClient.BaseAddress) </h5>
+        @*<p class="card-text">@onlineStatus</p>*@
+
+        <p class="card-text">
+            Address :
+            <input type="url" @bind-value="httpClient.BaseAddress" />
+        </p>
+        <p class="card-text">
+            PIN :
+            <input type="password" @bind-value="httpClient.PIN" />
+        </p>
+
+        <button type="button" class="btn btn-info" @onclick="async () => await service.WakeOnLan()">Wake up</button>
+
+        @foreach (var command in Enum.GetValues(typeof(PCController.Shared.Command))
+.Cast<PCController.Shared.Command>())
+        {
+            <button type="button" class="btn btn-info" @onclick="async () => await service.InvokeCommandAsync(command, System.Threading.CancellationToken.None)">@command</button>
+        }
+    </div>
+</div>
