@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="PCController.MainPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <StackLayout>
+        <Label
+            Padding="30,0,30,0"
+            FontSize="16"
+            Text="IP:" />
+        <Entry Text="{Binding BaseAddress}" />
+        <Label
+            Padding="30,0,30,0"
+            FontSize="16"
+            Text="PIN:" />
+        <Entry Text="{Binding PIN}" />
+        <Label
+            Padding="30,0,30,0"
+            FontSize="16"
+            Text="MAC:" />
+        <Entry Text="{Binding MacAddress}" />
+
+
+        <Label
+            Padding="30,0,30,0"
+            FontSize="16"
+            Text="{Binding ErrorMessage}" />
+
+        <ListView ItemsSource="{Binding SupportedCommands}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <ViewCell.View>
+
+                            <Button Command="{Binding Command}" Text="{Binding Label}" />
+                        </ViewCell.View>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </StackLayout>
+
+</ContentPage>

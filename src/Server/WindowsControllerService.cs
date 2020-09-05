@@ -20,7 +20,7 @@ namespace PCController.Services
 
         public bool IsPlatformSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        public async Task InvokeCommandAsync(string pin, Command command, CancellationToken cancellationToken)
+        public async Task InvokeCommandAsync(string pin, ControllerCommandType command, CancellationToken cancellationToken)
         {
             if (this.config.Pin != pin)
             {
@@ -29,51 +29,51 @@ namespace PCController.Services
 
             switch (command)
             {
-                case Command.Shutdown:
+                case ControllerCommandType.Shutdown:
                     await this.StartProcessAsync(@"shutdown", "/s");
                     break;
 
-                case Command.Sleep:
+                case ControllerCommandType.Sleep:
                     await this.StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
                     break;
 
-                case Command.Lock:
+                case ControllerCommandType.Lock:
                     await this.StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
                     break;
 
-                case Command.PlayPauseMedia:
+                case ControllerCommandType.PlayPauseMedia:
                     keybd_event(0xB3, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.StopMedia:
+                case ControllerCommandType.StopMedia:
                     keybd_event(0xB2, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.IncreaseVolume:
+                case ControllerCommandType.IncreaseVolume:
                     keybd_event(0xAF, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.DecreaseVolume:
+                case ControllerCommandType.DecreaseVolume:
                     keybd_event(0xAE, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.MuteVolume:
+                case ControllerCommandType.MuteVolume:
                     keybd_event(0xAD, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.LeftArrow:
+                case ControllerCommandType.LeftArrow:
                     keybd_event(0x25, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.RightArrow:
+                case ControllerCommandType.RightArrow:
                     keybd_event(0x26, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.UpArrow:
+                case ControllerCommandType.UpArrow:
                     keybd_event(0x27, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 
-                case Command.DownArrow:
+                case ControllerCommandType.DownArrow:
                     keybd_event(0x29, 0, KeyeventfExtendedkey | 0, 0);
                     break;
 

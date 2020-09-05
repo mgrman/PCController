@@ -7,6 +7,6 @@ namespace PCController.Services
 {
     public interface IControllerService
     {
-        Task InvokeCommandAsync(string pin, Command command, CancellationToken cancellationToken);
+        Task InvokeCommandAsync(string pin, ControllerCommandType command, CancellationToken cancellationToken);
     }
 }

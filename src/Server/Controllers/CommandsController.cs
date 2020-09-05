@@ -78,7 +78,7 @@ namespace PCController.Server.Controllers
         [Route(Routes.CommandRoute)]
         [HttpPost]
         public async Task<IActionResult> InvokeCommandAsync([FromRoute(Name = Routes.CommandWord)]
-            Command command, [FromHeader(Name = Routes.PinHeader)]
+            ControllerCommandType command, [FromHeader(Name = Routes.PinHeader)]
             string pin, CancellationToken cancellationToken)
         {
             if (this.config.Pin != pin)
