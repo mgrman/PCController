@@ -359,7 +359,7 @@ MigrationBackup/
 .vscode/
 
 # publish
-/publish-*
+/publish-*/
 
 
 # Production app settings
