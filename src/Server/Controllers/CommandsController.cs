@@ -1,16 +1,14 @@
-using System.Collections.Generic;
-using System.Net.NetworkInformation;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PCController.Services;
 using PCController.Shared;
+using System.Net.NetworkInformation;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PCController.Server.Controllers
 {
-
     [ApiController]
     public class CommandsController : ControllerBase
     {
@@ -39,7 +37,6 @@ namespace PCController.Server.Controllers
 
             foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
             {
-
                 if (nic.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
                 {
                     foreach (UnicastIPAddressInformation ipInfo in nic.GetIPProperties().UnicastAddresses)
@@ -47,7 +44,7 @@ namespace PCController.Server.Controllers
                         if (ipInfo.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                         {
                             var ip = ipInfo.Address.ToString();
-                            if (string.Equals(host,ip, System.StringComparison.OrdinalIgnoreCase))
+                            if (string.Equals(host, ip, System.StringComparison.OrdinalIgnoreCase))
                             {
                                 string tempMac = nic.GetPhysicalAddress().ToString();
                                 if (nic.Speed > maxSpeed &&
@@ -65,15 +62,11 @@ namespace PCController.Server.Controllers
             }
 
             return new JsonResult("");
-
         }
-
-
 
         [HttpGet]
         [Route(Routes.CheckPinRout)]
-        public IActionResult PinCheck([FromHeader(Name = Routes.PinHeader)]string pin) =>new JsonResult(pin == config.Pin);
-
+        public IActionResult PinCheck([FromHeader(Name = Routes.PinHeader)] string pin) => new JsonResult(pin == config.Pin);
 
         [Route(Routes.CommandRoute)]
         [HttpPost]

@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PCController.Shared
+﻿namespace PCController.Shared
 {
     public static class Routes
     {
-
         public const string CommandWord = "command";
         public const string CommandPlaceholder = "{" + CommandWord + "}";
         public const string StatusRoute = "api/status";

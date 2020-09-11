@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using PCController.Shared;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using PCController.Shared;
 
 namespace PCController.Services
 {
@@ -83,6 +83,7 @@ namespace PCController.Services
         [DllImport("user32.dll")]
 #pragma warning disable IDE1006 // Naming Styles
         private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
+
 #pragma warning restore IDE1006 // Naming Styles
 
         private static async Task StartProcessAsync(string path, string args)

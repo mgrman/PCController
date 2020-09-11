@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +9,6 @@ using System.Net.NetworkInformation;
 using System.Net.Topology;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -18,7 +16,8 @@ using Xamarin.Forms;
 
 namespace PCController
 {
-    public enum PCStatus{
+    public enum PCStatus
+    {
         Offline,
         DeviceOnline,
         ServerOnline,
@@ -33,7 +32,7 @@ namespace PCController
         private string baseAddress;
         private string macAddress;
         private string pin;
-        private string errorMessage=string.Empty;
+        private string errorMessage = string.Empty;
         private PCStatus status;
         private bool isDisposed;
 
@@ -54,7 +53,6 @@ namespace PCController
                 .Select(o => new LabeledCommand(o.ToString(), new Command(() => InvokeCommandInBackground(o))))
                 .ToList();
 
-
             SupportedCommands = new[]
             {
                 new LabeledCommand("WoL",new Command(() => WakeOnLan()))
@@ -62,28 +60,27 @@ namespace PCController
             .Concat(cmds)
             .ToList();
 
-
             pinger = new Ping();
-            
-            Task.Run( async () =>
-            {
-                while (!isDisposed)
-                {
-                    var start = DateTime.Now;
 
-                    Status = await GetStatusAsync();
+            Task.Run(async () =>
+           {
+               while (!isDisposed)
+               {
+                   var start = DateTime.Now;
 
-                    var time = TimeSpan.FromSeconds(3)- (DateTime.Now - start) ;
-                    if (time.Ticks > 0)
-                    {
-                        await Task.Delay(time);
-                    }
-                    else
-                    {
-                        await Task.Yield();
-                    }
-                }
-            });
+                   Status = await GetStatusAsync();
+
+                   var time = TimeSpan.FromSeconds(3) - (DateTime.Now - start);
+                   if (time.Ticks > 0)
+                   {
+                       await Task.Delay(time);
+                   }
+                   else
+                   {
+                       await Task.Yield();
+                   }
+               }
+           });
         }
 
         private async Task<PCStatus> GetStatusAsync()
@@ -161,7 +158,6 @@ namespace PCController
             }
         }
 
-
         public PCStatus Status
         {
             get => status; set
@@ -177,8 +173,9 @@ namespace PCController
 
         public IReadOnlyList<LabeledCommand> SupportedCommands { get; }
 
-
-        public string ErrorMessage { get => errorMessage; private set
+        public string ErrorMessage
+        {
+            get => errorMessage; private set
             {
                 errorMessage = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ErrorMessage)));
@@ -187,8 +184,7 @@ namespace PCController
 
         private async void UpdateMacAddressInBackground()
         {
-                MacAddress = await GetFromJsonAsync<string>(Routes.MacAddressRoute);
-          
+            MacAddress = await GetFromJsonAsync<string>(Routes.MacAddressRoute);
         }
 
         private async void InvokeCommandInBackground(ControllerCommandType command)
@@ -233,14 +229,12 @@ namespace PCController
                     else
                     {
                         macAddress = res.Address;
-
                     }
                 }
                 else
                 {
                     macAddress = PhysicalAddress.Parse(MacAddress);
                 }
-
 
                 macAddress.SendWol(ip);
 
@@ -275,7 +269,6 @@ namespace PCController
             request.Headers.Add(Routes.PinHeader, PIN);
 
             return httpClient.SendAsync(request, cancellationToken);
-
         }
 
         public void Dispose()
