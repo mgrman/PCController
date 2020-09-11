@@ -26,6 +26,11 @@
             FontSize="16"
             Text="{Binding ErrorMessage}" />
 
+        <Label
+            Padding="30,0,30,0"
+            FontSize="16"
+            Text="{Binding Status}" />
+
         <ListView ItemsSource="{Binding SupportedCommands}">
             <ListView.ItemTemplate>
                 <DataTemplate>

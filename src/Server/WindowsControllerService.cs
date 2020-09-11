@@ -18,8 +18,6 @@ namespace PCController.Services
             this.config = config.Value;
         }
 
-        public bool IsPlatformSupported => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
         public async Task InvokeCommandAsync(string pin, ControllerCommandType command, CancellationToken cancellationToken)
         {
             if (this.config.Pin != pin)
@@ -30,15 +28,15 @@ namespace PCController.Services
             switch (command)
             {
                 case ControllerCommandType.Shutdown:
-                    await this.StartProcessAsync(@"shutdown", "/s");
+                    await StartProcessAsync(@"shutdown", "/s");
                     break;
 
                 case ControllerCommandType.Sleep:
-                    await this.StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
+                    await StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
                     break;
 
                 case ControllerCommandType.Lock:
-                    await this.StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
+                    await StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
                     break;
 
                 case ControllerCommandType.PlayPauseMedia:
@@ -83,9 +81,11 @@ namespace PCController.Services
         }
 
         [DllImport("user32.dll")]
+#pragma warning disable IDE1006 // Naming Styles
         private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
+#pragma warning restore IDE1006 // Naming Styles
 
-        private async Task StartProcessAsync(string path, string args)
+        private static async Task StartProcessAsync(string path, string args)
         {
             var process = Process.Start(path, args);
             await process.WaitForExitAsync();

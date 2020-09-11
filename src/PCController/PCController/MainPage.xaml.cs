@@ -15,7 +15,7 @@ namespace PCController
             InitializeComponent();
 
 
-            BindingContext = new ControllerService(new SyncLocalStorageService(), new System.Net.Http.HttpClient());
+            BindingContext = new ControllerService(new SyncLocalStorageService());
         }
     }
 }

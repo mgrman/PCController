@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Net.Topology;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -17,27 +18,40 @@ using Xamarin.Forms;
 
 namespace PCController
 {
-    public class ControllerService : INotifyPropertyChanged
+    public enum PCStatus{
+        Offline,
+        DeviceOnline,
+        ServerOnline,
+        ValidPIN
+    }
+
+    public class ControllerService : INotifyPropertyChanged, IDisposable
     {
         private readonly ISyncLocalStorageService localStorageService;
+        private readonly HttpClient httpClient;
+        private readonly Ping pinger;
         private string baseAddress;
         private string macAddress;
         private string pin;
-        private string errorMessage;
-        private readonly HttpClient httpClient;
+        private string errorMessage=string.Empty;
+        private PCStatus status;
+        private bool isDisposed;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        public ControllerService(ISyncLocalStorageService localStorageService, HttpClient httpClient)
+        public ControllerService(ISyncLocalStorageService localStorageService)
         {
-            this.httpClient = httpClient;
+            this.httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(3)
+            };
             this.localStorageService = localStorageService;
             macAddress = localStorageService.ContainKey(nameof(MacAddress)) ? localStorageService.GetItemAsString(nameof(MacAddress)) : "";
             baseAddress = localStorageService.ContainKey(nameof(BaseAddress)) ? localStorageService.GetItemAsString(nameof(BaseAddress)) : "";
             pin = localStorageService.ContainKey(nameof(PIN)) ? localStorageService.GetItemAsString(nameof(PIN)) : "";
 
             var cmds = Enum.GetValues(typeof(ControllerCommandType)).Cast<ControllerCommandType>()
-                .Select(o => new LabeledCommand(o.ToString(), new Command(() => InvokeCommandAsync(o))))
+                .Select(o => new LabeledCommand(o.ToString(), new Command(() => InvokeCommandInBackground(o))))
                 .ToList();
 
 
@@ -47,6 +61,55 @@ namespace PCController
             }
             .Concat(cmds)
             .ToList();
+
+
+            pinger = new Ping();
+            
+            Task.Run( async () =>
+            {
+                while (!isDisposed)
+                {
+                    var start = DateTime.Now;
+
+                    Status = await GetStatusAsync();
+
+                    var time = TimeSpan.FromSeconds(3)- (DateTime.Now - start) ;
+                    if (time.Ticks > 0)
+                    {
+                        await Task.Delay(time);
+                    }
+                    else
+                    {
+                        await Task.Yield();
+                    }
+                }
+            });
+        }
+
+        private async Task<PCStatus> GetStatusAsync()
+        {
+            var ip = IPAddress.Parse(new Uri(BaseAddress, UriKind.Absolute).Host);
+            var pingReply = pinger.Send(ip);
+            if (pingReply.Status != IPStatus.Success)
+            {
+                return PCStatus.Offline;
+            }
+            try
+            {
+                var res = await ValidatePin();
+                if (res)
+                {
+                    return PCStatus.ValidPIN;
+                }
+                else
+                {
+                    return PCStatus.ServerOnline;
+                }
+            }
+            catch
+            {
+                return PCStatus.DeviceOnline;
+            }
         }
 
         public string BaseAddress
@@ -59,10 +122,15 @@ namespace PCController
                 }
                 baseAddress = value;
                 localStorageService.SetItem(nameof(BaseAddress), value);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BaseAddress)));
+                InvokePropertyChanged(nameof(BaseAddress));
 
-                UpdateMacAddress();
+                UpdateMacAddressInBackground();
             }
+        }
+
+        private void InvokePropertyChanged(string name)
+        {
+            Device.InvokeOnMainThreadAsync(() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name)));
         }
 
         public string MacAddress
@@ -75,7 +143,7 @@ namespace PCController
                 }
                 macAddress = value;
                 localStorageService.SetItem(nameof(MacAddress), value);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MacAddress)));
+                InvokePropertyChanged(nameof(MacAddress));
             }
         }
 
@@ -89,11 +157,27 @@ namespace PCController
                 }
                 pin = value;
                 localStorageService.SetItem(nameof(PIN), value);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PIN)));
+                InvokePropertyChanged(nameof(PIN));
+            }
+        }
+
+
+        public PCStatus Status
+        {
+            get => status; set
+            {
+                if (status == value)
+                {
+                    return;
+                }
+                status = value;
+                InvokePropertyChanged(nameof(Status));
             }
         }
 
         public IReadOnlyList<LabeledCommand> SupportedCommands { get; }
+
+
         public string ErrorMessage { get => errorMessage; private set
             {
                 errorMessage = value;
@@ -101,13 +185,13 @@ namespace PCController
             }
         }
 
-        private async Task UpdateMacAddress()
+        private async void UpdateMacAddressInBackground()
         {
                 MacAddress = await GetFromJsonAsync<string>(Routes.MacAddressRoute);
           
         }
 
-        public async Task InvokeCommandAsync(ControllerCommandType command)
+        private async void InvokeCommandInBackground(ControllerCommandType command)
         {
             ErrorMessage = "";
             try
@@ -124,12 +208,12 @@ namespace PCController
             }
         }
 
-        public async Task<bool> ValidatePin()
+        private async Task<bool> ValidatePin()
         {
             return await GetFromJsonAsync<bool>(Routes.CheckPinRout);
         }
 
-        public  void WakeOnLan()
+        private void WakeOnLan()
         {
             ErrorMessage = "";
             try
@@ -159,26 +243,30 @@ namespace PCController
 
 
                 macAddress.SendWol(ip);
+
+                var mask = new NetMask(255, 255, 255, 0);
+                var broadcastAddress = ip.GetBroadcastAddress(mask);
+
+                IPAddress.Broadcast.SendWol(macAddress);
             }
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
             }
         }
+
         private async Task<TValue> GetFromJsonAsync<TValue>(string? requestUri, CancellationToken cancellationToken = default)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, BaseAddress + requestUri);
             request.Headers.Add(Routes.PinHeader, PIN);
 
             Task<HttpResponseMessage> taskResponse = httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            using (HttpResponseMessage response = await taskResponse.ConfigureAwait(false))
-            {
-                response.EnsureSuccessStatusCode();
+            using HttpResponseMessage response = await taskResponse.ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
 
-                var text = await response.Content!.ReadAsStringAsync();
+            var text = await response.Content!.ReadAsStringAsync();
 
-                return JsonSerializer.Deserialize<TValue>(text);
-            }
+            return JsonSerializer.Deserialize<TValue>(text);
         }
 
         private Task<HttpResponseMessage> PostAsJsonAsync(string? requestUri, CancellationToken cancellationToken = default)
@@ -188,6 +276,13 @@ namespace PCController
 
             return httpClient.SendAsync(request, cancellationToken);
 
+        }
+
+        public void Dispose()
+        {
+            isDisposed = true;
+            pinger.Dispose();
+            httpClient.Dispose();
         }
     }
 
