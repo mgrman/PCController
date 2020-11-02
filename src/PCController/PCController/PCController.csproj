@@ -26,4 +26,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\PCController.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="PCPage.xaml.cs">
+      <DependentUpon>PCPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

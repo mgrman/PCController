@@ -121,7 +121,11 @@ namespace PCController
                 localStorageService.SetItem(nameof(BaseAddress), value);
                 InvokePropertyChanged(nameof(BaseAddress));
 
-                UpdateMacAddressInBackground();
+                Task.Run( async() =>
+                {
+
+                    await UpdateMacAddress();
+                });
             }
         }
 
@@ -182,7 +186,7 @@ namespace PCController
             }
         }
 
-        private async void UpdateMacAddressInBackground()
+        private async Task UpdateMacAddress()
         {
             MacAddress = await GetFromJsonAsync<string>(Routes.MacAddressRoute);
         }

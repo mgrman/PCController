@@ -2,13 +2,11 @@
 
 namespace PCController
 {
-    public partial class MainPage : ContentPage
+    public partial class MainPage : CarouselPage
     {
         public MainPage()
         {
             InitializeComponent();
-
-            BindingContext = new ControllerService(new SyncLocalStorageService());
         }
     }
 }
