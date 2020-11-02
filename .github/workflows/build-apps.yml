@@ -1,0 +1,27 @@
+name: Build Apps
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Building APK
+        uses: ./action
+        with:
+          args: /r:True /t:SignAndroidPackage /p:AndroidSdkDirectory=/android/sdk src/PCController/PCController.Android/PCController.Android.csproj.csproj
+      - name: Artifacts
+        run: |
+          mkdir -p apks
+          cp src/PCController/PCController.Android/bin/Debug/*.apk apks
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: apks
+          path: apks
