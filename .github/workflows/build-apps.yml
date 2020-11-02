@@ -16,7 +16,7 @@ jobs:
       working-directory: src
     - name: Android
       run: msbuild PCController.Android.csproj /verbosity:normal /t:Rebuild /p:Configuration=Release
-      working-directory: PCController/PCController.Android
+      working-directory: src/PCController/PCController.Android
     - name: UWP
       run: msbuild PCController.UWP.csproj /verbosity:normal /t:Rebuild /p:Configuration=Release
-      working-directory: PCController/PCController.UWP
+      working-directory: src/PCController/PCController.UWP
