@@ -1,0 +1,2 @@
+rmdir /s /q publish-server-arm64
+dotnet publish src\Server\PCController.Server.csproj --configuration Release --output publish-server-arm64 -p:PublishReadyToRun=true --runtime win10-arm64 -p:PublishSingleFile=true --self-contained true

@@ -5,9 +5,6 @@
     <UserSecretsId>PCController.Server-E57E3764-EC1F-4A6B-A9FF-34981A3B0C1D</UserSecretsId>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.11.1" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\PCController.Shared.csproj" />

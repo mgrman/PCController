@@ -1,1 +1,0 @@
-dotnet publish src\Server\PCController.Server.csproj --configuration Release --output publish-server-arm -p:PublishReadyToRun=true --runtime win10-arm -p:PublishSingleFile=true --self-contained true

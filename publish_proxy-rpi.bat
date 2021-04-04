@@ -1,0 +1,2 @@
+rmdir /s /q publish_proxy-rpi
+dotnet publish src\PCController.Proxy\PCController.Proxy.csproj --configuration Release --output publish_proxy-rpi --runtime linux-arm -p:PublishSingleFile=true --self-contained true
