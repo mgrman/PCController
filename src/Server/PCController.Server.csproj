@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="2.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Shared\PCController.Shared.csproj" />
   </ItemGroup>
 
