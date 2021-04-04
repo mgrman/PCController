@@ -34,6 +34,7 @@ using MailKit;
 using MailKit.Net.Imap;
 using System.Diagnostics;
 using System.Linq;
+using MailKit.Search;
 
 namespace PCController.Server
 {
@@ -76,33 +77,41 @@ namespace PCController.Server
 
         async Task FetchMessageSummariesAsync(bool print)
         {
-            while (folder.Count > 0)
+            var messageIds = await folder.SearchAsync(SearchQuery.NotSeen);
+
+            if (messageIds.Count == 0)
             {
-                var messages = await folder.FetchAsync(0, -1, MessageSummaryItems.UniqueId | MessageSummaryItems.Envelope, cancel.Token);
+                return;
+            }
+            var messages = await folder.FetchAsync(messageIds, MessageSummaryItems.UniqueId | MessageSummaryItems.Envelope, cancel.Token);
 
-                var toDelete = new List<UniqueId>();
-                foreach (var message in messages)
+
+
+            var toDelete = new List<UniqueId>();
+            foreach (var message in messages)
+            {
+                if (message.Flags?.HasFlag(MessageFlags.Seen) ?? false)
                 {
-                    try
-                    {
-                        bool removeEmail = false;
-                        NewMessageArrived?.Invoke(message.NormalizedSubject, ref removeEmail);
+                    continue;
+                }
+                try
+                {
+                    bool removeEmail = false;
+                    NewMessageArrived?.Invoke(message.NormalizedSubject, ref removeEmail);
 
-                        if (removeEmail)
-                        {
-                            toDelete.Add(message.UniqueId);
-                        }
-                    }
-                    catch (Exception ex)
+                    if (removeEmail)
                     {
-                        Console.WriteLine("Problem handling message: " + ex.Message);
+                        toDelete.Add(message.UniqueId);
                     }
-
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Problem handling message: " + ex.Message);
                 }
 
-                folder.AddFlags(toDelete, MessageFlags.Deleted, true);
-                folder.Expunge();
             }
+
+            folder.AddFlags(toDelete, MessageFlags.Seen, true);
         }
 
         async Task WaitForNewMessagesAsync()
