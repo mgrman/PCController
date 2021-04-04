@@ -90,10 +90,6 @@ namespace PCController.Server
             var toDelete = new List<UniqueId>();
             foreach (var message in messages)
             {
-                if (message.Flags?.HasFlag(MessageFlags.Seen) ?? false)
-                {
-                    continue;
-                }
                 try
                 {
                     bool removeEmail = false;
