@@ -66,18 +66,24 @@ namespace PCController
            {
                while (!isDisposed)
                {
-                   var start = DateTime.Now;
-
-                   Status = await GetStatusAsync();
-
-                   var time = TimeSpan.FromSeconds(3) - (DateTime.Now - start);
-                   if (time.Ticks > 0)
+                   try
                    {
-                       await Task.Delay(time);
-                   }
-                   else
+                       var start = DateTime.Now;
+
+                       Status = await GetStatusAsync();
+
+                       var time = TimeSpan.FromSeconds(3) - (DateTime.Now - start);
+                       if (time.Ticks > 0)
+                       {
+                           await Task.Delay(time);
+                       }
+                       else
+                       {
+                           await Task.Yield();
+                       }
+                   }catch(Exception ex)
                    {
-                       await Task.Yield();
+                       errorMessage = ex.Message;
                    }
                }
            });
@@ -86,8 +92,17 @@ namespace PCController
         private async Task<PCStatus> GetStatusAsync()
         {
             var ip = IPAddress.Parse(new Uri(BaseAddress, UriKind.Absolute).Host);
-            var pingReply = pinger.Send(ip);
-            if (pingReply.Status != IPStatus.Success)
+            PingReply? pingReply;
+            try
+            {
+                pingReply = pinger.Send(ip);
+            }
+            catch(PingException ex)
+            {
+                pingReply = null;
+            }
+
+            if (pingReply != null && pingReply.Status != IPStatus.Success)
             {
                 return PCStatus.Offline;
             }
@@ -105,7 +120,14 @@ namespace PCController
             }
             catch
             {
-                return PCStatus.DeviceOnline;
+                if (pingReply == null)
+                {
+                    return PCStatus.Offline;
+                }
+                else
+                {
+                    return PCStatus.DeviceOnline;
+                }
             }
         }
 
