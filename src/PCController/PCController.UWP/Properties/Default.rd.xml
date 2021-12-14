@@ -23,6 +23,8 @@
     -->
     <Assembly Name="*Application*" Dynamic="Required All" />
 
+    <Namespace Name="System.Text.Json.Serialization.Converters" Browse="Required All"/>
+
     <!-- Add your application specific runtime directives here. -->
   </Application>
 </Directives>

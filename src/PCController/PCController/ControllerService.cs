@@ -66,67 +66,68 @@ namespace PCController
            {
                while (!isDisposed)
                {
-                   try
-                   {
-                       var start = DateTime.Now;
+                    var start = DateTime.Now;
 
-                       Status = await GetStatusAsync();
+                    (Status, ErrorMessage) = await GetStatusAsync();
 
-                       var time = TimeSpan.FromSeconds(3) - (DateTime.Now - start);
-                       if (time.Ticks > 0)
-                       {
-                           await Task.Delay(time);
-                       }
-                       else
-                       {
-                           await Task.Yield();
-                       }
-                   }catch(Exception ex)
-                   {
-                       errorMessage = ex.Message;
-                   }
+                    var time = TimeSpan.FromSeconds(3) - (DateTime.Now - start);
+                    if (time.Ticks > 0)
+                    {
+                        await Task.Delay(time);
+                    }
+                    else
+                    {
+                        await Task.Yield();
+                    }
                }
            });
         }
 
-        private async Task<PCStatus> GetStatusAsync()
+        private async Task<(PCStatus, string)> GetStatusAsync()
         {
-            var ip = IPAddress.Parse(new Uri(BaseAddress, UriKind.Absolute).Host);
-            PingReply? pingReply;
+            PingReply? pingReply=null;
             try
             {
-                pingReply = pinger.Send(ip);
-            }
-            catch(PingException ex)
-            {
-                pingReply = null;
-            }
+                if (!Uri.TryCreate(BaseAddress, UriKind.Absolute, out var baseAddressUri))
+                {
+                    return (PCStatus.Offline, $"Invalid URI : '{BaseAddress}'");
+                }
+                if (IPAddress.TryParse(baseAddressUri.Host, out var baseIpAddress))
+                {
+                    try
+                    {
+                        pingReply = pinger.Send(baseIpAddress);
+                    }
+                    catch (PingException ex)
+                    {
+                        pingReply = null;
+                    }
+                }
 
-            if (pingReply != null && pingReply.Status != IPStatus.Success)
-            {
-                return PCStatus.Offline;
-            }
-            try
-            {
+                if (pingReply != null && pingReply.Status != IPStatus.Success)
+                {
+                    return (PCStatus.Offline, null);
+                }
                 var res = await ValidatePin();
                 if (res)
                 {
-                    return PCStatus.ValidPIN;
+                    return (PCStatus.ValidPIN, null);
                 }
                 else
                 {
-                    return PCStatus.ServerOnline;
+                    return (PCStatus.ServerOnline, null);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                var message =ex is OperationCanceledException?null: $"{ex.GetType().Name}{Environment.NewLine}{ex.Message}{Environment.NewLine}{ex.StackTrace}";
                 if (pingReply == null)
                 {
-                    return PCStatus.Offline;
+                    return (PCStatus.Offline, message);
                 }
                 else
                 {
-                    return PCStatus.DeviceOnline;
+                    return (PCStatus.DeviceOnline, message);
                 }
             }
         }
