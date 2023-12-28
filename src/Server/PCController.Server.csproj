@@ -1,13 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <UserSecretsId>PCController.Server-E57E3764-EC1F-4A6B-A9FF-34981A3B0C1D</UserSecretsId>
   </PropertyGroup>
 
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\PCController.Shared.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Update="psshutdown64.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -32,11 +32,11 @@ namespace PCController.Services
                     break;
 
                 case ControllerCommandType.Sleep:
-                    await StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
+                    await StartProcessAsync(@"psshutdown64.exe", "-d -t 0");
                     break;
 
                 case ControllerCommandType.Lock:
-                    await StartProcessAsync(@"C:\WINDOWS\system32\rundll32.exe", "user32.dll,LockWorkStation");
+                    await StartProcessAsync(@"psshutdown64.exe", "-l -t 0");
                     break;
 
                 case ControllerCommandType.PlayPauseMedia:
